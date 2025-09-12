@@ -1,0 +1,20 @@
+.courses-page {
+  background:  var(--bg);
+  padding: 40px 110px;
+}
+.popular-cards h1 {
+  text-align: center;
+  color: black;
+  margin-bottom: 30px;
+}
+.popular-cards {
+  margin-top: 0;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+    
+}
+#title{
+    color: var(--primary);
+}

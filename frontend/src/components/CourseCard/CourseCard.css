@@ -1,0 +1,58 @@
+.card {
+  padding: 5px;
+  margin: 5px;
+  width: 310px;
+  min-height: 430px;
+  border-radius: 16px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: black;
+  box-shadow: 0 9px 24px rgba(80, 0, 120, 0.28);
+}
+
+.user-img {
+  width: 28px;
+  height: 28px;
+}
+.main-img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  object-fit: cover;
+}
+.card .title {
+  width: 90%;
+  min-height: 80px;
+  line-height: 1.1;
+  color: black;
+}
+.card .price {
+  width: 50%;
+}
+.cat-tag, .meta-info, .pri-ins {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.cat {
+  background: rgba(128, 0, 128, 0.1);
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.tag {
+  background: var(--primary);
+  color: white;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-weight: 600;
+}
+.card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px 10px;
+}

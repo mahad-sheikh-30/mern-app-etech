@@ -1,0 +1,18 @@
+.teachers-page {
+  background: var(--bg);
+  padding: 40px 110px;
+  min-height: 100vh;
+}
+.teachers-title {
+  text-align: center;
+  color: var(--primary);
+  margin-bottom: 30px;
+  font-size: 2rem;
+  font-weight: 700;
+}
+.teachers-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 32px 24px;
+}

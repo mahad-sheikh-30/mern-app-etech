@@ -1,0 +1,97 @@
+
+.navbar{
+    position: static;
+    top:0;
+    backdrop-filter: blur(6px);
+    z-index: 10;
+    max-width: 1200px;
+    padding: 5px 25px 2px 25px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+.logo{
+    font-size: 1.6rem;
+    text-decoration: none;
+    color: var(--text);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+.logo:hover {
+    transform: scale(1.1);
+}
+.nav-links{
+    display: flex;
+    justify-content: center;
+    gap:30px;
+    align-items: center;
+    list-style: none;
+    padding-left: 0;
+}
+
+.nav-links li{
+ position: relative;
+}
+
+.nav-links > li > a{
+    text-decoration: none;
+    color: var(--text);
+    font-weight: 600;
+    font-size: 1.2rem;
+}
+
+.nav-links > li > a:hover {
+    color: var(--primary);
+}
+
+
+.sign-trial{
+    display: flex;
+    align-items: center;
+    gap:15px;
+}
+.button{
+  padding: .5rem 1.4rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+ 
+}
+.sign-in-btn{
+border: 0.5px solid black;
+background: transparent;
+}
+.trial-btn{
+border: none;
+color: white;
+background: linear-gradient(140deg,var(--primary),var(--secondary));
+}
+.sign-in-btn:hover{ border-color: var(--primary); color: var(--primary); }
+.trial-btn:hover{ filter: brightness(1.05); }
+.menu-toggle{ 
+    background:transparent; 
+    border:none; 
+    display:none; 
+    padding:8px; 
+    border-radius:10px; }
+
+.menu-toggle:focus-visible{ outline:2px solid var(--purple); 
+    outline-offset:2px; }
+
+.menu-toggle .bar{ display:block; 
+    width:25px; 
+    height:3px; 
+    background:var(--text); 
+    margin:4px 0; 
+    border-radius:2px; }
+@media (max-width: 768px) {
+    .navbar{
+        padding: 14px 16px;
+        justify-content: space-between;   
+    }
+    .nav-items{ display: none; }     
+    .sign-trial{ display:none  }
+    .menu-toggle{display: block;}
+}
