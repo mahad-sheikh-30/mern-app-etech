@@ -6,7 +6,7 @@ const Navbar: React.FC = () => {
   return (
     <nav className="navbar">
       <Link to="/" className="logo">
-        <h1>Etech.</h1>
+        <h1>Etech</h1>
       </Link>
 
       <div className="nav-items" aria-label="Primary">
