@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../SignIn/Auth.css";
+import axios from "axios";
 
 const SignUp: React.FC = () => {
   const [data, setData] = useState({
@@ -10,15 +11,28 @@ const SignUp: React.FC = () => {
     password: "",
   });
 
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (data.password.length < 6) {
-      alert("Password must be at least 6 characters long.");
-      return;
+
+    try {
+      const url = "http://localhost:8080/api/users";
+      const { data: res } = await axios.post(url, data);
+      navigate("/signin");
+      console.log(res.message);
+    } catch (error: any) {
+      if (
+        error.response &&
+        error.response.status >= 400 &&
+        error.response.status <= 500
+      ) {
+        setError(error.response.data.message);
+      }
     }
     console.log("Sign Up Data:", data);
     alert(`Name: ${data?.name}
@@ -43,7 +57,6 @@ const SignUp: React.FC = () => {
             required
           />
         </label>
-
         <label>
           Phone:
           <input
@@ -54,7 +67,6 @@ const SignUp: React.FC = () => {
             required
           />
         </label>
-
         <label>
           Email:
           <input
@@ -65,7 +77,6 @@ const SignUp: React.FC = () => {
             required
           />
         </label>
-
         <label>
           Password:
           <input
@@ -76,9 +87,8 @@ const SignUp: React.FC = () => {
             required
           />
         </label>
-
+        {error && <div className="error-message">{error}</div>}
         <button type="submit">Sign Up</button>
-
         <p>
           Already have an account? <Link to="/signin">Sign In</Link>
         </p>
