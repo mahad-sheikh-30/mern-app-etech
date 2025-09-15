@@ -16,3 +16,12 @@
   justify-content: center;
   gap: 32px 24px;
 }
+
+
+
+@media (max-width: 768px) {
+    .teachers-page{
+        padding:30px 10px;
+      
+    }
+  }

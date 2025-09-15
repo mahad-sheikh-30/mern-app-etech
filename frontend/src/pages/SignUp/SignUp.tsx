@@ -35,64 +35,62 @@ const SignUp: React.FC = () => {
       }
     }
     console.log("Sign Up Data:", data);
-    alert(`Name: ${data?.name}
-        Phone: ${data?.phone}
-        Email: ${data?.email}
-        Password: ${data?.password}`);
 
     setData({ name: "", phone: "", email: "", password: "" });
   };
 
   return (
-    <div className="auth-container">
-      <h1>Sign Up</h1>
-      <form onSubmit={handleSubmit} className="auth-form">
-        <label>
-          Name:
-          <input
-            type="text"
-            name="name"
-            value={data.name}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <label>
-          Phone:
-          <input
-            type="tel"
-            name="phone"
-            value={data.phone}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <label>
-          Email:
-          <input
-            type="email"
-            name="email"
-            value={data.email}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        <label>
-          Password:
-          <input
-            type="password"
-            name="password"
-            value={data.password}
-            onChange={handleChange}
-            required
-          />
-        </label>
-        {error && <div className="error-message">{error}</div>}
-        <button type="submit">Sign Up</button>
-        <p>
-          Already have an account? <Link to="/signin">Sign In</Link>
-        </p>
-      </form>
+    <div className="wrapper">
+      <div className="auth-container">
+        <h1>Sign Up</h1>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label>
+            Name:
+            <input
+              type="text"
+              name="name"
+              value={data.name}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            Phone:
+            <input
+              type="tel"
+              name="phone"
+              value={data.phone}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            Email:
+            <input
+              type="email"
+              name="email"
+              value={data.email}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <label>
+            Password:
+            <input
+              type="password"
+              name="password"
+              value={data.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          {error && <div className="error-message">{error}</div>}
+          <button type="submit">Sign Up</button>
+          <p>
+            Already have an account? <Link to="/signin">Sign In</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

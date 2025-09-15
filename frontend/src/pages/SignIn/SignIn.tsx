@@ -1,58 +1,75 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Auth.css";
+import axios from "axios";
 
 const SignIn: React.FC = () => {
   const [data, setData] = useState({
     email: "",
     password: "",
   });
-
+  const [error, setError] = useState("");
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Sign In Data:", data);
-    alert(`Email: ${data?.email}
-      Password: ${data?.password}`);
+
+    try {
+      const url = "http://localhost:8080/api/auth";
+      const { data: res } = await axios.post(url, data);
+      localStorage.setItem("token", res.data);
+      window.location.href = "/";
+      console.log(res.message);
+    } catch (error: any) {
+      if (
+        error.response &&
+        error.response.status >= 400 &&
+        error.response.status <= 500
+      ) {
+        setError(error.response.data.message);
+      }
+    }
+    console.log("Sign Up Data:", data);
 
     setData({ email: "", password: "" });
   };
 
   return (
-    <div className="auth-container">
-      <h1>Sign In</h1>
-      <form onSubmit={handleSubmit} className="auth-form">
-        <label>
-          Email:
-          <input
-            type="email"
-            name="email"
-            value={data.email}
-            onChange={handleChange}
-            required
-          />
-        </label>
+    <div className="wrapper">
+      <div className="auth-container">
+        <h1>Sign In</h1>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label>
+            Email:
+            <input
+              type="email"
+              name="email"
+              value={data.email}
+              onChange={handleChange}
+              required
+            />
+          </label>
 
-        <label>
-          Password:
-          <input
-            type="password"
-            name="password"
-            value={data.password}
-            onChange={handleChange}
-            required
-          />
-        </label>
+          <label>
+            Password:
+            <input
+              type="password"
+              name="password"
+              value={data.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          {error && <div className="error-message">{error}</div>}
+          <button type="submit">Sign In</button>
 
-        <button type="submit">Sign In</button>
-
-        <p>
-          Don’t have an account? <Link to="/signup">Sign Up</Link>
-        </p>
-      </form>
+          <p>
+            Don’t have an account? <Link to="/signup">Sign Up</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 };

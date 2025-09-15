@@ -198,6 +198,7 @@ height: 460px;}
         justify-content: space-between;
         padding:0px 5px ;
         font-size: 0.6rem;
+        min-height: 55px;
     }
     .hero-bottom img{
         width: 17px;
