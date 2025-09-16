@@ -83,6 +83,7 @@ const Navbar: React.FC = () => {
             <img src={crossImg} alt="close" />
           </button>
         </div>
+        <hr />
 
         <ul>
           <li>
@@ -124,10 +125,6 @@ const Navbar: React.FC = () => {
           </Link>
         </div>
       </div>
-
-      {isMenuOpen && (
-        <div className="backdrop" onClick={() => setIsMenuOpen(false)} />
-      )}
     </>
   );
 };

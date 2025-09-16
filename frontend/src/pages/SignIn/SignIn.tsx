@@ -20,6 +20,7 @@ const SignIn: React.FC = () => {
       const url = "http://localhost:8080/api/auth";
       const { data: res } = await axios.post(url, data);
       localStorage.setItem("token", res.data);
+
       window.location.href = "/";
       console.log(res.message);
     } catch (error: any) {

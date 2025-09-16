@@ -32,6 +32,7 @@ const SignUp: React.FC = () => {
         error.response.status <= 500
       ) {
         setError(error.response.data.message);
+        return;
       }
     }
     console.log("Sign Up Data:", data);
