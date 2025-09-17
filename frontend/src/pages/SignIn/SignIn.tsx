@@ -15,13 +15,19 @@ const SignIn: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     try {
       const url = "http://localhost:8080/api/auth";
       const { data: res } = await axios.post(url, data);
-      localStorage.setItem("token", res.data);
 
-      window.location.href = "/";
+      localStorage.setItem("token", res.data);
+      localStorage.setItem("role", res.role);
+
+      if (res.role === "admin") {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/";
+      }
+
       console.log(res.message);
     } catch (error: any) {
       if (
@@ -32,9 +38,6 @@ const SignIn: React.FC = () => {
         setError(error.response.data.message);
       }
     }
-    console.log("Sign Up Data:", data);
-
-    setData({ email: "", password: "" });
   };
 
   return (
