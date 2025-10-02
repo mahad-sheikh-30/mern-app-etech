@@ -2,17 +2,23 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import crossImg from "../../assets/closee.png";
-
+import userImg from "../../assets/user-circle.png";
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isUserOpen, setIsUserOpen] = useState(false);
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
     navigate("/signin");
     setIsMenuOpen(false);
   };
+
+  const name = localStorage.getItem("name");
+  const email = localStorage.getItem("email");
+  const role = localStorage.getItem("role");
+  console.log(name + "   " + email);
 
   return (
     <>
@@ -39,16 +45,50 @@ const Navbar: React.FC = () => {
         </div>
 
         <div className="sign-trial">
+          <button className="trial-btn button">Free Trial</button>
           {!token ? (
             <Link to="/signin">
               <button className="sign-in-btn button">Sign In</button>
             </Link>
           ) : (
-            <button onClick={handleSignOut} className="sign-in-btn button">
-              Sign Out
-            </button>
+            <>
+              <div
+                className="user-img"
+                onClick={() => setIsUserOpen(!isUserOpen)}
+              >
+                <img src={userImg} alt="" />
+
+                {isUserOpen && (
+                  <div className="user-info">
+                    <h4>{name?.toUpperCase()}</h4>
+                    <hr />
+                    <p>{email}</p>
+                    <hr />
+                    <h4>{role?.toUpperCase()}</h4>
+                    <hr />
+
+                    {role === "admin" && (
+                      <>
+                        <button
+                          onClick={() => {
+                            navigate("/admin");
+                            setIsUserOpen(false);
+                          }}
+                          className="button"
+                        >
+                          Admin Panel
+                        </button>
+                        <hr />
+                      </>
+                    )}
+                    <button onClick={handleSignOut} className=" button">
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
           )}
-          <button className="trial-btn button">Free Trial</button>
         </div>
 
         <button

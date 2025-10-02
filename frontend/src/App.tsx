@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute.tsx/ProtectedRoute";
 import Home from "./pages/Home/Home";
 import Courses from "./pages/Courses/Courses";
 import TeacherPage from "./pages/TeacherPage/TeacherPage";
@@ -31,11 +32,18 @@ function App() {
           <Route path="/signup" element={<SignUp />} />
         </Route>
 
-        <Route element={<AdminLayout />}>
-          <Route path="/admin" element={<AdminPanel />} />
-          <Route path="/admin/courses" element={<CoursesAdmin />} />
-          <Route path="/admin/teachers" element={<TeachersAdmin />} />
-          <Route path="/admin/enrollments" element={<EnrollmentsAdmin />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route path="" element={<AdminPanel />} />
+          <Route path="courses" element={<CoursesAdmin />} />
+          <Route path="teachers" element={<TeachersAdmin />} />
+          <Route path="enrollments" element={<EnrollmentsAdmin />} />
         </Route>
       </Routes>
     </BrowserRouter>

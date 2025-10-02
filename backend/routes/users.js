@@ -38,4 +38,20 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.send(users);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
+router.get("/students", async (req, res) => {
+  try {
+    const students = await User.find({ role: "student" });
+    res.send(students);
+  } catch (err) {
+    res.status(500).send({ error: err.message });
+  }
+});
 module.exports = router;

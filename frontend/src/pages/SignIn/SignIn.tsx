@@ -21,13 +21,14 @@ const SignIn: React.FC = () => {
 
       localStorage.setItem("token", res.data);
       localStorage.setItem("role", res.role);
+      localStorage.setItem("name", res.name);
+      localStorage.setItem("email", res.email);
 
       if (res.role === "admin") {
         window.location.href = "/admin";
       } else {
         window.location.href = "/";
       }
-
       console.log(res.message);
     } catch (error: any) {
       if (

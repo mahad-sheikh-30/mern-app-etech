@@ -1,5 +1,5 @@
 .navbar {
-  position: static;
+  position: relative;
   top: 0;
   backdrop-filter: blur(6px);
   z-index: 10;
@@ -9,6 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
+  z-index:100;
 }
 
 .logo {
@@ -56,9 +57,12 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
+  background: transparent;
+  color: white;
 }
 .sign-in-btn {
   border: 0.5px solid black;
+  color: black;
   background: transparent;
 }
 .trial-btn {
@@ -72,6 +76,43 @@
 }
 .trial-btn:hover {
   filter: brightness(1.05);
+}
+.user-img {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.user-img img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.user-info hr{
+  color: white;
+  margin: 10px 5px;
+  width: 100%;
+}
+.user-info p{
+  font-size: 12px;
+}
+.user-info{
+  padding: 10px;
+  position: absolute;
+  top:40px;
+  right: -40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 101;
+  background-color: var(--primary);
+  color: white;
+  border-radius: 30px;
+  min-width: 180px;
+  border: 1px solid black;
+  box-shadow: 0 8px 10px rgba(0, 0, 0, 0.8);
 }
 
 .menu-toggle {

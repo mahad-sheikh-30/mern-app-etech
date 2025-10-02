@@ -12,6 +12,7 @@ const SignUp: React.FC = () => {
   });
 
   const [error, setError] = useState("");
+
   const navigate = useNavigate();
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });

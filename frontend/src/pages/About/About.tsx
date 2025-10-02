@@ -110,7 +110,7 @@ const About: React.FC = () => (
           us, Etech is your gateway to a brighter future. Start your journey
           today!
         </p>
-        <button className="about-btn button">Get Started</button>
+        <button className="about-btn ">Get Started</button>
       </div>
     </section>
   </>

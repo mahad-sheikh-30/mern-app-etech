@@ -8,7 +8,6 @@ const courseSchema = new mongoose.Schema({
   coursesCount: { type: Number, required: true },
   studentsCount: { type: Number, default: 0 },
   image: { type: String },
-  instructor: { type: String, required: true },
   popular: { type: Boolean, default: false },
   teacherId: { type: mongoose.Schema.Types.ObjectId, ref: "Teacher" },
 });

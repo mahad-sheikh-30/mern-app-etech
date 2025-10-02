@@ -6,6 +6,7 @@ const connection = require("./db");
 
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
+
 const contactRoutes = require("./routes/contact");
 const teacherRoutes = require("./routes/teachers");
 const courseRoutes = require("./routes/courses");

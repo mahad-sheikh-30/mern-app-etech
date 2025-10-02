@@ -1,35 +1,62 @@
-import React, { useState } from "react";
+import React, { useReducer, useState } from "react";
 import axios from "axios";
 import "./Contact.css";
 
 const Contact: React.FC = () => {
-  const [data, setData] = useState({
+  interface formState {
+    name: string;
+    phone: string;
+    email: string;
+    comments: string;
+    submitted: Boolean;
+  }
+
+  const initialState: formState = {
     name: "",
     phone: "",
     email: "",
     comments: "",
-  });
+    submitted: false,
+  };
+
+  type formAction =
+    | { type: "SET_NAME"; payload: string }
+    | { type: "SET_PHONE"; payload: string }
+    | { type: "SET_EMAIL"; payload: string }
+    | { type: "SET_COMMENT"; payload: string }
+    | { type: "SUBMIT" }
+    | { type: "RESET" };
+
+  const formReducer = (state: formState, action: formAction) => {
+    switch (action.type) {
+      case "SET_NAME":
+        return { ...state, name: action.payload };
+      case "SET_PHONE":
+        return { ...state, phone: action.payload };
+      case "SET_EMAIL":
+        return { ...state, email: action.payload };
+      case "SET_COMMENT":
+        return { ...state, comments: action.payload };
+      case "SUBMIT":
+        return { ...state, submitted: true };
+      case "RESET":
+        return initialState;
+      default:
+        return state;
+    }
+  };
+  const [state, dispatch] = useReducer(formReducer, initialState);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    dispatch({ type: "SUBMIT" });
 
     try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("You must be logged in to submit the form.");
-        return;
-      }
-
-      const res = await axios.post("http://localhost:8080/api/contact", data, {
-        headers: {
-          "x-auth-token": token || "",
-        },
-      });
-
+      const res = await axios.post("http://localhost:8080/api/contact", state);
       alert("Form submitted successfully!");
       console.log("Response:", res.data);
 
-      setData({ name: "", phone: "", email: "", comments: "" });
+      dispatch({ type: "RESET" });
     } catch (err: any) {
       if (err.response) {
         alert(err.response.data.message || "Failed to submit form");
@@ -42,10 +69,25 @@ const Contact: React.FC = () => {
     }
   };
 
-  const handleChange = (
+  const handleNameChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setData({ ...data, [e.target.name]: e.target.value });
+    dispatch({ type: "SET_NAME", payload: e.target.value });
+  };
+  const handlePhoneChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    dispatch({ type: "SET_PHONE", payload: e.target.value });
+  };
+  const handleEmailChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    dispatch({ type: "SET_EMAIL", payload: e.target.value });
+  };
+  const handleCommentChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    dispatch({ type: "SET_COMMENT", payload: e.target.value });
   };
 
   return (
@@ -58,8 +100,8 @@ const Contact: React.FC = () => {
             type="text"
             id="name"
             name="name"
-            value={data.name}
-            onChange={handleChange}
+            value={state.name}
+            onChange={handleNameChange}
             required
           />
         </label>
@@ -69,8 +111,8 @@ const Contact: React.FC = () => {
             type="tel"
             id="phone"
             name="phone"
-            value={data.phone}
-            onChange={handleChange}
+            value={state.phone}
+            onChange={handlePhoneChange}
             required
           />
         </label>
@@ -80,8 +122,8 @@ const Contact: React.FC = () => {
             type="email"
             id="email"
             name="email"
-            value={data.email}
-            onChange={handleChange}
+            value={state.email}
+            onChange={handleEmailChange}
             required
           />
         </label>
@@ -91,8 +133,8 @@ const Contact: React.FC = () => {
           <textarea
             id="comments"
             name="comments"
-            value={data.comments}
-            onChange={handleChange}
+            value={state.comments}
+            onChange={handleCommentChange}
           ></textarea>
         </label>
         <button type="submit">Submit</button>

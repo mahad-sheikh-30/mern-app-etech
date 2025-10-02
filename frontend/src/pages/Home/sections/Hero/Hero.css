@@ -14,15 +14,13 @@
 }
 .hero-btns {
   display: flex;
+  align-items: center;
 }
 .hero-p {
   margin: 16px 0px;
 }
-.enroll-btn {
-  border: none;
-  color: white;
-  background: linear-gradient(140deg, var(--primary), var(--secondary));
-}
+
+
 .enroll-btn:hover {
   filter: brightness(1.05);
 }
