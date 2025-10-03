@@ -6,7 +6,7 @@ import "./AdminForms.css";
 const TeachersAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
     _id: "",
-    image: "",
+    image: null as File | null,
     name: "",
     role: "",
     rating: 0,
@@ -51,20 +51,36 @@ const TeachersAdmin: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let imageUrl = "";
+
+      if (formData.image) {
+        const fileData = new FormData();
+        fileData.append("image", formData.image);
+
+        const uploadRes = await axios.post(
+          "http://localhost:8080/api/upload",
+          fileData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+
+        imageUrl = uploadRes.data.url;
+      }
+
+      const payload = { ...formData, image: imageUrl };
       if (isEditing) {
         await axios.put(
           `http://localhost:8080/api/teachers/${formData._id}`,
-          formData
+          payload
         );
         alert("Teacher updated!");
       } else {
-        const { _id, ...newTeacher } = formData;
+        const { _id, ...newTeacher } = payload;
         await axios.post("http://localhost:8080/api/teachers", newTeacher);
         alert("Teacher Added");
       }
       setFormData({
         _id: "",
-        image: "",
+        image: null as File | null,
         name: "",
         role: "",
         rating: 0,
@@ -87,13 +103,16 @@ const TeachersAdmin: React.FC = () => {
         <form className="form-container" onSubmit={handleSubmit}>
           <div className="form-row">
             <label>
-              Image URL
+              Image
               <input
-                type="text"
+                type="file"
                 name="image"
-                placeholder="Image URL"
-                value={formData.image}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    image: e.target.files?.[0] || null,
+                  })
+                }
               />
             </label>
 

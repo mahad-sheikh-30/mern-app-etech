@@ -11,7 +11,7 @@ const CoursesAdmin: React.FC = () => {
     price: 0,
     coursesCount: 0,
     studentsCount: 0,
-    image: "",
+    image: null as File | null,
     teacherId: "",
     popular: false,
   });
@@ -43,25 +43,41 @@ const CoursesAdmin: React.FC = () => {
       setFormData({ ...formData, [name]: value });
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      let imageUrl = "";
+
+      if (formData.image) {
+        const fileData = new FormData();
+        fileData.append("image", formData.image);
+
+        const uploadRes = await axios.post(
+          "http://localhost:8080/api/upload",
+          fileData,
+          {
+            headers: { "Content-Type": "multipart/form-data" },
+          }
+        );
+
+        imageUrl = uploadRes.data.url;
+      }
+
+      const payload = { ...formData, image: imageUrl };
+
       if (isEditing) {
         await axios.put(
           `http://localhost:8080/api/courses/${formData._id}`,
-          formData
+          payload
         );
         alert("Course updated!");
       } else {
-        const { _id, ...newCourse } = formData;
-
-        if (!newCourse.teacherId) {
-          delete (newCourse as any).teacherId;
-        }
+        const { _id, ...newCourse } = payload;
+        if (!newCourse.teacherId) delete (newCourse as any).teacherId;
         await axios.post("http://localhost:8080/api/courses", newCourse);
         alert("Course added!");
       }
+
       setFormData({
         _id: "",
         title: "",
@@ -70,7 +86,7 @@ const CoursesAdmin: React.FC = () => {
         price: 0,
         coursesCount: 0,
         studentsCount: 0,
-        image: "",
+        image: null as File | null,
         teacherId: "",
         popular: false,
       });
@@ -183,11 +199,14 @@ const CoursesAdmin: React.FC = () => {
             <label>
               Image
               <input
-                type="text"
+                type="file"
                 name="image"
-                placeholder="Image URL"
-                value={formData.image}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    image: e.target.files?.[0] || null,
+                  })
+                }
               />
             </label>
           </div>
