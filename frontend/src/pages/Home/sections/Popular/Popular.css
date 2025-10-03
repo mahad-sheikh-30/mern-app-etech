@@ -8,7 +8,6 @@
   max-width: 60%;
   margin: 0 auto;
   padding-bottom: 10px;
-  
 }
 .popular-cards {
   margin-top: 20px;
@@ -17,7 +16,6 @@
   gap: 30px;
   flex-wrap: wrap;
 }
-
 .courses-page {
   background: var(--bg);
   padding: 40px 110px;
@@ -34,7 +32,6 @@
 @media (max-width: 768px) {
     .popular{
         padding:30px 10px;
-      
     }
     .popular-head{
         max-width: 100%;

@@ -16,11 +16,6 @@ const enrollmentSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
-    status: {
-      type: String,
-      enum: ["active", "completed", "cancelled"],
-      default: "active",
-    },
   },
   { timestamps: true }
 );

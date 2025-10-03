@@ -69,3 +69,6 @@
 .enroll-btn:hover {
   background: purple;
 }
+.enrolled-btn{
+  background: black;
+}

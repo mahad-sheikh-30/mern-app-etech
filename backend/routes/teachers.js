@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get("/", async (req, res) => {
   try {
-    const teachers = await Teacher.find();
+    const teachers = await Teacher.find().sort();
     res.send(teachers);
   } catch (err) {
     res.status(500).send({ error: err.message });

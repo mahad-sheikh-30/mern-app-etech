@@ -81,7 +81,7 @@ const TeachersAdmin: React.FC = () => {
     <>
       <h1 className="main-h">Manage Teachers</h1>
 
-      <div className="add">
+      <div className="list">
         <h2>{isEditing ? "Update " : "Add "}Teacher</h2>
         <hr />
         <form className="form-container" onSubmit={handleSubmit}>

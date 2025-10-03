@@ -4,6 +4,7 @@ const Course = require("../models/course");
 const auth = require("../middleware/auth");
 const router = express.Router();
 const { User } = require("../models/user");
+
 router.post("/", auth, async (req, res) => {
   try {
     const { courseId } = req.body;
@@ -53,6 +54,17 @@ router.get("/", auth, async (req, res) => {
   }
 });
 
+router.get("/my", auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const enrollments = await Enrollment.find({ userId }).select("courseId");
+    const courseIds = enrollments.map((e) => e.courseId.toString());
+    res.json(courseIds);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.delete("/:id", auth, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -85,7 +97,7 @@ router.delete("/:id", auth, async (req, res) => {
     }
     return res.json({
       message: "Enrollment deleted successfully",
-      newRole: newRole,
+      newRole: newRole?.role || null,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

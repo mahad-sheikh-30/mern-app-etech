@@ -28,10 +28,10 @@
   height: 25px;
   margin-left: 10px;
 }
-.search-btn {
+.search-box .search-btn {
   border: none;
   color: white;
-  border-radius: 13px !important;
+  border-radius: 13px ;
   background: linear-gradient(140deg, var(--primary), var(--secondary));
 }
 .search-btn:hover {

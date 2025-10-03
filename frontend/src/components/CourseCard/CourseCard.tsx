@@ -1,7 +1,10 @@
 import "./CourseCard.css";
-import React from "react";
+import React, { useState, useEffect } from "react";
 import type { Teacher } from "../TeacherCard/TeacherCard";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useEnrolledCourses } from "../../customHooks/useEnrolledCourses";
+
 export interface Course {
   _id: string;
   image: string;
@@ -16,11 +19,17 @@ export interface Course {
 }
 
 const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
+  const navigate = useNavigate();
+
+  const { enrolledCourses, addEnrollment } = useEnrolledCourses();
+
+  const isEnroll = enrolledCourses.includes(course._id);
   const handleEnroll = async () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         alert("Please sign in first!");
+        navigate("/signin");
         return;
       }
       const role = localStorage.getItem("role");
@@ -38,6 +47,8 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
         }
       );
       localStorage.setItem("role", "student");
+      addEnrollment(course._id);
+
       alert("Successfully enrolled!");
       console.log(res.data);
     } catch (error: any) {
@@ -70,12 +81,18 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
             {course.teacherId?.name || "Not assigned yet"}
           </span>
         </div>
-        <button onClick={handleEnroll} className="enroll-btn">
-          Enroll
-        </button>
+
+        {isEnroll ? (
+          <button className=" enroll-btn enrolled-btn" disabled>
+            Enrolled
+          </button>
+        ) : (
+          <button className="enroll-btn" onClick={handleEnroll}>
+            Enroll
+          </button>
+        )}
       </div>
     </div>
   );
 };
-
 export default CourseCard;

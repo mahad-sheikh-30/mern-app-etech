@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import searchIcon from "../../../../assets/search.png";
 import p1 from "../../../../assets/p1.jpg";
 import p2 from "../../../../assets/p2.jpg";
@@ -34,14 +35,28 @@ const benefits = [
 ];
 
 const Search: React.FC = () => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
+  const handleSearch = () => {
+    if (searchTerm.trim()) {
+      navigate(`/courses?search=${encodeURIComponent(searchTerm)}`);
+    }
+  };
   return (
     <section className="search-sec" id="course">
       <div className="search">
         <h1>Search Courses</h1>
         <div className="search-box">
           <img src={searchIcon} alt="Search" />
-          <input type="text" placeholder="Search for over 50+ courses" />
-          <button className="button search-btn">Search</button>
+          <input
+            type="text"
+            placeholder="Search for over 50+ courses"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button className="button search-btn" onClick={handleSearch}>
+            Search
+          </button>
         </div>
       </div>
 

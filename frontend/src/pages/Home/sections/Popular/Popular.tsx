@@ -9,21 +9,22 @@ const Popular: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPopularCourses = async () => {
-      try {
-        const res = await axios.get("http://localhost:8080/api/courses");
-        const popularCourses = res.data.filter((c: Course) => c.popular);
-        setCourses(popularCourses);
-      } catch (err) {
-        console.error("Error fetching courses:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchPopularCourses();
   }, []);
-
+  const fetchPopularCourses = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/api/courses");
+      const popularCourses = res.data
+        .filter((c: Course) => c.popular)
+        .sort((a: Course, b: Course) => b.price - a.price)
+        .slice(0, 3);
+      setCourses(popularCourses);
+    } catch (err) {
+      console.error("Error fetching courses:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
   if (loading) return <h2>Loading popular courses...</h2>;
 
   return (

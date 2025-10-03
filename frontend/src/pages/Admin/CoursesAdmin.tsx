@@ -101,7 +101,7 @@ const CoursesAdmin: React.FC = () => {
     <div className="course-admin">
       <h1 className="main-h">Manage Courses</h1>
 
-      <div className="add">
+      <div className="list">
         <h2>{isEditing ? "Edit Course" : "Add Course"}</h2>
         <hr />
         <form className="form-container" onSubmit={handleSubmit}>
