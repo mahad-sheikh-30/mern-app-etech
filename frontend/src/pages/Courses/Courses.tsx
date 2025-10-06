@@ -5,29 +5,35 @@ import "./Courses.css";
 import axios from "axios";
 import searchIcon from "../../assets/search.png";
 import { useLocation } from "react-router-dom";
+import { getAllCourses } from "../../api/courseService";
+
 const Courses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialSearch = queryParams.get("search") || "";
+
   useEffect(() => {
-    fetchCourses();
+    loadCourses();
   }, []);
-  const fetchCourses = async () => {
+
+  const loadCourses = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/courses");
-      console.log(res.data);
-      setCourses(res.data);
-      setFilteredCourses(res.data);
+      const data = await getAllCourses();
+      console.log(data);
+      setCourses(data);
+      setFilteredCourses(data);
+
       if (initialSearch) {
         const lower = initialSearch.toLowerCase();
         setSearchTerm(initialSearch);
         setFilteredCourses(
-          res.data.filter((c: Course) => c.title.toLowerCase().includes(lower))
+          data.filter((c: Course) => c.title.toLowerCase().includes(lower))
         );
       }
     } catch (err) {
@@ -52,6 +58,7 @@ const Courses: React.FC = () => {
 
   return (
     <section className="courses-page">
+      <h1 id="title">All Courses</h1>
       <div className="head">
         <div className="search-bar">
           <img src={searchIcon} alt="search" />
@@ -62,7 +69,7 @@ const Courses: React.FC = () => {
             onChange={handleSearch}
           />
         </div>
-        <h1 id="title">All Courses</h1>
+
         <button
           className="filter-btn"
           onClick={() => {

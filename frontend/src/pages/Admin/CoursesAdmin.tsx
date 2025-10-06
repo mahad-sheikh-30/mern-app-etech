@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./AdminForms.css";
+import { getAllCourses } from "../../api/courseService";
 
 const CoursesAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -18,20 +19,18 @@ const CoursesAdmin: React.FC = () => {
 
   const [courses, setCourses] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    fetchCourses();
+    loadCourses();
   }, []);
 
-  const fetchCourses = async () => {
-    try {
-      const res = await axios.get("http://localhost:8080/api/courses");
-      setCourses(res.data);
-    } catch (err) {
-      console.error("Error fetching courses:", err);
-    }
+  const loadCourses = async () => {
+    const data = await getAllCourses();
+    setCourses(data);
+    setLoading(false);
   };
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -45,6 +44,8 @@ const CoursesAdmin: React.FC = () => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       let imageUrl = "";
 
@@ -91,10 +92,12 @@ const CoursesAdmin: React.FC = () => {
         popular: false,
       });
       setIsEditing(false);
-      fetchCourses();
+      loadCourses();
     } catch (err) {
       console.error("Error saving course:", err);
       alert("Failed!");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -107,7 +110,7 @@ const CoursesAdmin: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
       await axios.delete(`http://localhost:8080/api/courses/${id}`);
-      fetchCourses();
+      loadCourses();
     } catch (err) {
       console.error("Error deleting course:", err);
     }
@@ -243,26 +246,33 @@ const CoursesAdmin: React.FC = () => {
       <div className="list">
         <h2>All Courses</h2>
         <hr />
-        <div className="comp-list">
-          {courses.map((course) => (
-            <div key={course._id} className="comp-card">
-              <div className="info">
-                <h3>{course.title}</h3>
+        {loading ? (
+          <h2>Loading courses...</h2>
+        ) : (
+          <div className="comp-list">
+            {courses.map((course) => (
+              <div key={course._id} className="comp-card">
+                <div className="info">
+                  <h3>{course.title}</h3>
+                </div>
+                <div className="actions">
+                  <button
+                    className="edit-btn"
+                    onClick={() => handleEdit(course)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(course._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="actions">
-                <button className="edit-btn" onClick={() => handleEdit(course)}>
-                  Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(course._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

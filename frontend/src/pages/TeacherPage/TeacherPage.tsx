@@ -43,6 +43,7 @@ const TeacherPage: React.FC = () => {
   return (
     <>
       <section className="teachers-page">
+        <h1 id="title">Meet Our Instructors</h1>
         <div className="head">
           <div className="search-bar">
             <img src={searchIcon} alt="search" />
@@ -53,7 +54,7 @@ const TeacherPage: React.FC = () => {
               onChange={handleSearch}
             />
           </div>
-          <h1 id="title">Meet Our Instructors</h1>
+
           <button
             className="filter-btn"
             onClick={() => {

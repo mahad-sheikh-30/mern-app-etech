@@ -3,29 +3,19 @@ import CourseCard from "../../../../components/CourseCard/CourseCard";
 import type { Course } from "../../../../components/CourseCard/CourseCard";
 import "./Popular.css";
 import axios from "axios";
+import { getPopularCourses } from "../../../../api/courseService";
 
 const Popular: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
+  const [popularCourses, setPopularCourses] = useState<Course[]>([]);
 
   useEffect(() => {
-    fetchPopularCourses();
-  }, []);
-  const fetchPopularCourses = async () => {
-    try {
-      const res = await axios.get("http://localhost:8080/api/courses");
-      const popularCourses = res.data
-        .filter((c: Course) => c.popular)
-        .sort((a: Course, b: Course) => b.price - a.price)
-        .slice(0, 3);
-      setCourses(popularCourses);
-    } catch (err) {
-      console.error("Error fetching courses:", err);
-    } finally {
+    (async () => {
+      const data = await getPopularCourses();
+      setPopularCourses(data);
       setLoading(false);
-    }
-  };
-  if (loading) return <h2>Loading popular courses...</h2>;
+    })();
+  }, []);
 
   return (
     <section className="popular" id="offers">
@@ -37,11 +27,15 @@ const Popular: React.FC = () => {
           success in every stage of your educational journey.
         </p>
       </div>
-      <div className="popular-cards">
-        {courses.map((course) => (
-          <CourseCard key={course._id} course={course} />
-        ))}
-      </div>
+      {loading ? (
+        <h2>Loading popular courses...</h2>
+      ) : (
+        <div className="popular-cards">
+          {popularCourses.map((course) => (
+            <CourseCard key={course._id} course={course} />
+          ))}
+        </div>
+      )}
     </section>
   );
 };

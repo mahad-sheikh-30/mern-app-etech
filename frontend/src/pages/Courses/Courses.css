@@ -1,17 +1,19 @@
 .courses-page {
-  background:  var(--bg);
+  background: var(--bg);
   padding: 40px 110px;
 }
 .head {
   display: flex;
-  align-items: center;   
-  justify-content: space-between; 
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   position: relative;
   padding: 10px;
 }
-
-.search-bar{
+#title {
+  text-align: center;
+}
+.search-bar {
   display: flex;
   background: transparent;
   padding: 6px 8px;
@@ -19,21 +21,20 @@
   align-items: center;
   box-shadow: 0 4px 4px rgba(0, 0, 0, 0.1);
 }
-.search-bar:focus-within{
+.search-bar:focus-within {
   background: whitesmoke;
 }
-.search-bar img{
+.search-bar img {
   width: 25px;
   height: 25px;
 }
-.search-bar input{
+.search-bar input {
   background: transparent;
   border: none;
   outline: none;
   padding: 6px;
 }
 .filter-btn {
-
   padding: 0.5rem 0.5rem;
   background: transparent;
   color: white;
@@ -42,9 +43,10 @@
   font-weight: bold;
   cursor: pointer;
   transition: 0.3s;
-
 }
-.filter-btn:hover{ background-color:whitesmoke}
+.filter-btn:hover {
+  background-color: whitesmoke;
+}
 
 .filter-btn .bar {
   display: block;
@@ -55,15 +57,15 @@
   margin: 4px 0;
   border-radius: 18px;
 }
-.filter-opt p{
+.filter-opt p {
   font-size: 13px;
   padding: 8px 5px;
   cursor: pointer;
-} 
-.filter-opt p:hover{
+}
+.filter-opt p:hover {
   background-color: purple;
 }
-.filter-opt{
+.filter-opt {
   padding: 10px;
   border: 1px solid black;
   border-radius: 10px;
@@ -71,10 +73,9 @@
   background: var(--primary);
   color: white;
   position: absolute;
-  top:50px;
+  top: 50px;
   right: 15px;
 }
-
 
 .head #title {
   color: var(--primary);
@@ -94,12 +95,11 @@
 }
 
 @media (max-width: 768px) {
-    .courses-page{
-        padding:30px 10px;
-      
-    }
-    .popular-cards{
-        gap: 15px;
-          justify-content: center;
-    }
+  .courses-page {
+    padding: 30px 10px;
+  }
+  .popular-cards {
+    gap: 15px;
+    justify-content: center;
+  }
 }

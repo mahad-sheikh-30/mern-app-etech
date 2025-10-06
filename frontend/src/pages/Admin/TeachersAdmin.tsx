@@ -18,7 +18,7 @@ const TeachersAdmin: React.FC = () => {
 
   const [teachers, setTeachers] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [submitting, setSubmitting] = useState(false);
   const fetchTeachers = async () => {
     try {
       const res = await axios.get("http://localhost:8080/api/teachers");
@@ -50,6 +50,8 @@ const TeachersAdmin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       let imageUrl = "";
 
@@ -90,6 +92,8 @@ const TeachersAdmin: React.FC = () => {
     } catch (err) {
       console.error("Error adding teacher:", err);
       alert("Failed to add teacher!");
+    } finally {
+      setSubmitting(false);
     }
   };
 
