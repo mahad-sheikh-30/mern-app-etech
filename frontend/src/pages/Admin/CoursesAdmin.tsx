@@ -53,13 +53,22 @@ const CoursesAdmin: React.FC = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+
     if (type === "checkbox") {
       const target = e.target as HTMLInputElement;
       setFormData({ ...formData, [name]: target.checked });
+    } else if (name === "price") {
+      const priceValue = Number(value);
+      setFormData({
+        ...formData,
+        price: priceValue,
+        tag: priceValue === 0 ? "Free" : "Premium",
+      });
     } else {
       setFormData({ ...formData, [name]: value });
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (submitting) return;
@@ -173,15 +182,7 @@ const CoursesAdmin: React.FC = () => {
           <div className="form-row">
             <label>
               Tag
-              <select
-                name="tag"
-                value={formData.tag}
-                onChange={handleChange}
-                required
-              >
-                <option value="Free">Free</option>
-                <option value="Premium">Premium</option>
-              </select>
+              <input type="text" name="tag" value={formData.tag} readOnly />
             </label>
 
             <label>

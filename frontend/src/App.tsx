@@ -12,6 +12,8 @@ import AdminPanel from "./pages/Admin/AdminPanel";
 import CoursesAdmin from "./pages/Admin/CoursesAdmin";
 import TeachersAdmin from "./pages/Admin/TeachersAdmin";
 import EnrollmentsAdmin from "./pages/Admin/EnrollmentsAdmin";
+import Success from "./pages/Success/Success";
+import Cancel from "./pages/Cancel/Cancel";
 
 import MainLayout from "./layouts/MainLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -30,6 +32,8 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/success" element={<Success />} />
+          <Route path="/cancel" element={<Cancel />} />
         </Route>
 
         <Route

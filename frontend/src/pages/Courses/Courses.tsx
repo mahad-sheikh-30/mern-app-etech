@@ -25,7 +25,6 @@ const Courses: React.FC = () => {
   const loadCourses = async () => {
     try {
       const data = await getAllCourses();
-      console.log(data);
       setCourses(data);
       setFilteredCourses(data);
 

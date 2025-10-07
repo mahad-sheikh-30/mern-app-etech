@@ -24,7 +24,10 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
   const { enrolledCourses, addEnrollment } = useEnrolledCourses();
   const [modalOpen, setModalOpen] = useState(false);
   const isEnroll = enrolledCourses.includes(course._id);
-  const handleEnroll = async () => {
+  const [loading, setLoading] = useState(false);
+  const handleEnroll = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (loading || isEnroll) return;
     try {
       const token = localStorage.getItem("token");
       if (!token) {
@@ -37,34 +40,47 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
         alert("Admin cannot enroll in a course!");
         return;
       }
-      const res = await axios.post(
-        "http://localhost:8080/api/enrollments",
-        { courseId: course._id },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      localStorage.setItem("role", "student");
-      addEnrollment(course._id);
+      setLoading(true);
 
-      confirm("PAY MONEY");
-      alert("Successfully enrolled!");
-      console.log(res.data);
-    } catch (error: any) {
-      if (error.response) {
-        alert(error.response.data.error || "Failed to enroll");
-      } else {
-        alert("Something went wrong");
+      if (course.price === 0) {
+        await axios.post(
+          "http://localhost:8080/api/enrollments",
+          { courseId: course._id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        localStorage.setItem("role", "student");
+        addEnrollment(course._id);
+        alert("You have been enrolled in this free course!");
+        setLoading(false);
+        return;
       }
-      console.error(error);
+
+      const res = await axios.post(
+        "http://localhost:8080/api/payment/create-checkout-session",
+        { courseId: course._id },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      window.location.href = res.data.url;
+    } catch (error: any) {
+      console.error("Payment session failed:", error);
+      alert(
+        error.response?.data?.error ||
+          "Payment session could not be created. Try again."
+      );
+      setLoading(false);
     }
+  };
+
+  const handleCardClick = () => {
+    if (loading) return;
+    setModalOpen(true);
   };
 
   return (
     <>
-      <div className="card" onClick={() => setModalOpen(true)}>
+      <div className="card" onClick={handleCardClick}>
         <img src={course.image} className="main-img" />
         <div className="card-details">
           <div className="cat-tag">
@@ -85,12 +101,16 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
           </div>
 
           {isEnroll ? (
-            <button className=" enroll-btn enrolled-btn" disabled>
+            <button className="enroll-btn enrolled-btn" disabled>
               Enrolled
             </button>
           ) : (
-            <button className="enroll-btn" onClick={handleEnroll}>
-              Enroll
+            <button
+              className="enroll-btn"
+              onClick={handleEnroll}
+              disabled={loading}
+            >
+              {loading ? "Redirecting..." : "Enroll"}
             </button>
           )}
         </div>
