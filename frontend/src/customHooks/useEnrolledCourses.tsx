@@ -10,7 +10,6 @@ export const useEnrolledCourses = () => {
         const token = localStorage.getItem("token");
         if (!token) {
           setEnrolledCourses([]);
-
           return;
         }
 

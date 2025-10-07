@@ -22,7 +22,7 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
   const navigate = useNavigate();
 
   const { enrolledCourses, addEnrollment } = useEnrolledCourses();
-
+  const [modalOpen, setModalOpen] = useState(false);
   const isEnroll = enrolledCourses.includes(course._id);
   const handleEnroll = async () => {
     try {
@@ -49,6 +49,7 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
       localStorage.setItem("role", "student");
       addEnrollment(course._id);
 
+      confirm("PAY MONEY");
       alert("Successfully enrolled!");
       console.log(res.data);
     } catch (error: any) {
@@ -62,37 +63,70 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
   };
 
   return (
-    <div className="card">
-      <img src={course.image} className="main-img" />
-      <div className="card-details">
-        <div className="cat-tag">
-          <span className="cat">{course.category}</span>
-          <span className="tag">{course.tag}</span>
-        </div>
-        <h2 className="title">{course.title}</h2>
-        <div className="meta-info">
-          <span className="courses">{course.coursesCount} Lessons</span>
-          <span className="students">{course.studentsCount} Students</span>
-        </div>
-        <div className="pri-ins">
-          <h2 className="price">${course.price}</h2>
+    <>
+      <div className="card" onClick={() => setModalOpen(true)}>
+        <img src={course.image} className="main-img" />
+        <div className="card-details">
+          <div className="cat-tag">
+            <span className="cat">{course.category}</span>
+            <span className="tag">{course.tag}</span>
+          </div>
+          <h2 className="title">{course.title}</h2>
+          <div className="meta-info">
+            <span className="courses">{course.coursesCount} Lessons</span>
+            <span className="students">{course.studentsCount} Students</span>
+          </div>
+          <div className="pri-ins">
+            <h2 className="price">${course.price}</h2>
 
-          <span className="instruct">
-            {course.teacherId?.name || "Not assigned yet"}
-          </span>
-        </div>
+            <span className="instruct">
+              {course.teacherId?.name || "Not assigned yet"}
+            </span>
+          </div>
 
-        {isEnroll ? (
-          <button className=" enroll-btn enrolled-btn" disabled>
-            Enrolled
-          </button>
-        ) : (
-          <button className="enroll-btn" onClick={handleEnroll}>
-            Enroll
-          </button>
-        )}
+          {isEnroll ? (
+            <button className=" enroll-btn enrolled-btn" disabled>
+              Enrolled
+            </button>
+          ) : (
+            <button className="enroll-btn" onClick={handleEnroll}>
+              Enroll
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+      {modalOpen && (
+        <div className="modal-overlay" onClick={() => setModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <img src={course.image} className="modal-img-fullscreen" />
+
+            <div className="modal-details-column">
+              <div className="cat-tag">
+                <span className="cat">{course.category}</span>
+                <span className="tag">{course.tag}</span>
+              </div>
+              <h2 className="title">{course.title}</h2>
+              <span className="courses">{course.coursesCount} Lessons</span>
+              <span className="students">{course.studentsCount} Students</span>
+              <h2 className="price">${course.price}</h2>
+              <span className="instruct">
+                {course.teacherId?.name || "Not assigned yet"}
+              </span>
+
+              {isEnroll ? (
+                <button className="enroll-btn enrolled-btn" disabled>
+                  Enrolled
+                </button>
+              ) : (
+                <button className="enroll-btn" onClick={handleEnroll}>
+                  Enroll
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 export default CourseCard;

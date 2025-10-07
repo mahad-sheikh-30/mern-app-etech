@@ -3,7 +3,7 @@ import CourseCard from "../../../../components/CourseCard/CourseCard";
 import type { Course } from "../../../../components/CourseCard/CourseCard";
 import "./Popular.css";
 import axios from "axios";
-import { getPopularCourses } from "../../../../api/courseService";
+import { getPopularCourses } from "../../../../api/getService";
 
 const Popular: React.FC = () => {
   const [loading, setLoading] = useState(true);

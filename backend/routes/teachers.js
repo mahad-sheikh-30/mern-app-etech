@@ -1,7 +1,8 @@
 const express = require("express");
 const Teacher = require("../models/teacher");
 const router = express.Router();
-
+const upload = require("../middleware/multer");
+const uploadToCloudinary = require("../utils/cloudinaryUpload");
 router.get("/", async (req, res) => {
   try {
     const teachers = await Teacher.find().sort();
@@ -20,9 +21,16 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const newTeacher = new Teacher(req.body);
+    let imageUrl = "";
+
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.buffer);
+      imageUrl = result.secure_url;
+    }
+
+    const newTeacher = new Teacher({ ...req.body, image: imageUrl });
     await newTeacher.save();
     res.send(newTeacher);
   } catch (err) {

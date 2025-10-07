@@ -2,24 +2,24 @@ import React, { useEffect, useState } from "react";
 import TeacherCard from "../../components/TeacherCard/TeacherCard";
 import type { Teacher } from "../../components/TeacherCard/TeacherCard";
 import "./TeacherPage.css";
-import axios from "axios";
 import searchIcon from "../../assets/search.png";
-
+import { getAllTeachers } from "../../api/getService";
 const TeacherPage: React.FC = () => {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [filteredTeachers, setFilteredTeachers] = useState<Teacher[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
-    fetchTeachers();
+    loadTeachers();
   }, []);
-  const fetchTeachers = async () => {
+
+  const loadTeachers = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/teachers");
-      console.log(res.data);
-      setTeachers(res.data);
-      setFilteredTeachers(res.data);
+      const data = await getAllTeachers("teachers");
+      setTeachers(data);
+      setFilteredTeachers(data);
     } catch (err) {
       console.error("Error fetching teachers:", err);
     } finally {

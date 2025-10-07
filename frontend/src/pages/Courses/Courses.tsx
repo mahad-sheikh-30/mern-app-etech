@@ -5,7 +5,7 @@ import "./Courses.css";
 import axios from "axios";
 import searchIcon from "../../assets/search.png";
 import { useLocation } from "react-router-dom";
-import { getAllCourses } from "../../api/courseService";
+import { getAllCourses } from "../../api/getService";
 
 const Courses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);

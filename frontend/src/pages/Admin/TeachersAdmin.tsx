@@ -1,28 +1,32 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-
+import { getAllTeachers } from "../../api/getService";
 import "./AdminForms.css";
 
 const TeachersAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
     _id: "",
-    image: null as File | null,
     name: "",
     role: "",
     rating: 0,
+    image: null as File | null,
   });
 
   useEffect(() => {
-    fetchTeachers();
+    loadTeachers();
   }, []);
 
   const [teachers, setTeachers] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const fetchTeachers = async () => {
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const loadTeachers = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/teachers");
-      setTeachers(res.data);
+      const data = await getAllTeachers("teachers");
+      setTeachers(data);
+      setLoading(false);
     } catch (err) {
       console.error("Error fetching teachers:", err);
     }
@@ -30,6 +34,7 @@ const TeachersAdmin: React.FC = () => {
 
   const handleEdit = (teacher: any) => {
     setFormData(teacher);
+    setImagePreview(teacher.image || null);
     setIsEditing(true);
   };
 
@@ -38,7 +43,7 @@ const TeachersAdmin: React.FC = () => {
       return;
     try {
       await axios.delete(`http://localhost:8080/api/teachers/${id}`);
-      fetchTeachers();
+      loadTeachers();
     } catch (err) {
       console.error("Error deleting teacher:", err);
     }
@@ -53,31 +58,25 @@ const TeachersAdmin: React.FC = () => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      let imageUrl = "";
-
+      const fileData = new FormData();
+      fileData.append("name", formData.name);
+      fileData.append("role", formData.role);
+      fileData.append("rating", String(formData.rating));
       if (formData.image) {
-        const fileData = new FormData();
         fileData.append("image", formData.image);
-
-        const uploadRes = await axios.post(
-          "http://localhost:8080/api/upload",
-          fileData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-
-        imageUrl = uploadRes.data.url;
       }
 
-      const payload = { ...formData, image: imageUrl };
       if (isEditing) {
         await axios.put(
           `http://localhost:8080/api/teachers/${formData._id}`,
-          payload
+          fileData,
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
         alert("Teacher updated!");
       } else {
-        const { _id, ...newTeacher } = payload;
-        await axios.post("http://localhost:8080/api/teachers", newTeacher);
+        await axios.post("http://localhost:8080/api/teachers", fileData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         alert("Teacher Added");
       }
       setFormData({
@@ -88,7 +87,7 @@ const TeachersAdmin: React.FC = () => {
         rating: 0,
       });
       setIsEditing(false);
-      fetchTeachers();
+      loadTeachers();
     } catch (err) {
       console.error("Error adding teacher:", err);
       alert("Failed to add teacher!");
@@ -105,33 +104,6 @@ const TeachersAdmin: React.FC = () => {
         <h2>{isEditing ? "Update " : "Add "}Teacher</h2>
         <hr />
         <form className="form-container" onSubmit={handleSubmit}>
-          <div className="form-row">
-            <label>
-              Image
-              <input
-                type="file"
-                name="image"
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    image: e.target.files?.[0] || null,
-                  })
-                }
-              />
-            </label>
-
-            <label>
-              Rating
-              <input
-                type="number"
-                name="rating"
-                placeholder="Rating"
-                value={formData.rating}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
-
           <div className="form-row">
             <label>
               Instructor Name
@@ -155,7 +127,41 @@ const TeachersAdmin: React.FC = () => {
               />
             </label>
           </div>
+          <div className="form-row">
+            <label>
+              Rating
+              <input
+                type="number"
+                name="rating"
+                placeholder="Rating"
+                value={formData.rating}
+                onChange={handleChange}
+              />
+            </label>
+            <label>
+              Image
+              <input
+                type="file"
+                name="image"
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
+                  setFormData({
+                    ...formData,
+                    image: file,
+                  });
+                  if (file) {
+                    setImagePreview(URL.createObjectURL(file));
+                  }
+                }}
+              />
+            </label>
 
+            {imagePreview && (
+              <div className="preview">
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
+          </div>
           <button type="submit">{isEditing ? "Update " : "Add "}Teacher</button>
         </form>
       </div>
@@ -163,29 +169,33 @@ const TeachersAdmin: React.FC = () => {
       <div className="list">
         <h2>All Teachers</h2>
         <hr />
-        <div className="comp-list">
-          {teachers.map((teacher) => (
-            <div key={teacher._id} className="comp-card">
-              <div className="info">
-                <h3>{teacher.name}</h3>
+        {loading ? (
+          <h2>Loading teachers...</h2>
+        ) : (
+          <div className="comp-list">
+            {teachers.map((teacher) => (
+              <div key={teacher._id} className="comp-card">
+                <div className="info">
+                  <h3>{teacher.name}</h3>
+                </div>
+                <div className="actions">
+                  <button
+                    className="edit-btn"
+                    onClick={() => handleEdit(teacher)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDelete(teacher._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
-              <div className="actions">
-                <button
-                  className="edit-btn"
-                  onClick={() => handleEdit(teacher)}
-                >
-                  Edit
-                </button>
-                <button
-                  className="delete-btn"
-                  onClick={() => handleDelete(teacher._id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

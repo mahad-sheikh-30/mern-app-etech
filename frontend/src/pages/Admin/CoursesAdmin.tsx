@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./AdminForms.css";
-import { getAllCourses } from "../../api/courseService";
+import { getAllCourses } from "../../api/getService";
+import { getAllTeachers } from "../../api/getService";
 
 const CoursesAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -18,18 +19,35 @@ const CoursesAdmin: React.FC = () => {
   });
 
   const [courses, setCourses] = useState<any[]>([]);
+  const [teachers, setTeachers] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   useEffect(() => {
     loadCourses();
+    loadTeachers();
   }, []);
 
+  const loadTeachers = async () => {
+    try {
+      const data = await getAllTeachers("teachers");
+      setTeachers(data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to load teachers:", err);
+    }
+  };
+
   const loadCourses = async () => {
-    const data = await getAllCourses();
-    setCourses(data);
-    setLoading(false);
+    try {
+      const data = await getAllCourses("courses");
+      setCourses(data);
+      setLoading(false);
+    } catch (err) {
+      console.error("Failed to load courses:", err);
+    }
   };
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -46,36 +64,33 @@ const CoursesAdmin: React.FC = () => {
     e.preventDefault();
     if (submitting) return;
     setSubmitting(true);
+
     try {
-      let imageUrl = "";
+      const fileData = new FormData();
+      fileData.append("title", formData.title);
+      fileData.append("category", formData.category);
+      fileData.append("tag", formData.tag);
+      fileData.append("price", String(formData.price));
+      fileData.append("coursesCount", String(formData.coursesCount));
+      fileData.append("studentsCount", String(formData.studentsCount));
+      fileData.append("teacherId", formData.teacherId);
+      fileData.append("popular", String(formData.popular));
 
       if (formData.image) {
-        const fileData = new FormData();
         fileData.append("image", formData.image);
-
-        const uploadRes = await axios.post(
-          "http://localhost:8080/api/upload",
-          fileData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
-
-        imageUrl = uploadRes.data.url;
       }
-
-      const payload = { ...formData, image: imageUrl };
 
       if (isEditing) {
         await axios.put(
           `http://localhost:8080/api/courses/${formData._id}`,
-          payload
+          fileData,
+          { headers: { "Content-Type": "multipart/form-data" } }
         );
         alert("Course updated!");
       } else {
-        const { _id, ...newCourse } = payload;
-        if (!newCourse.teacherId) delete (newCourse as any).teacherId;
-        await axios.post("http://localhost:8080/api/courses", newCourse);
+        await axios.post("http://localhost:8080/api/courses", fileData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         alert("Course added!");
       }
 
@@ -87,10 +102,11 @@ const CoursesAdmin: React.FC = () => {
         price: 0,
         coursesCount: 0,
         studentsCount: 0,
-        image: null as File | null,
+        image: null,
         teacherId: "",
         popular: false,
       });
+
       setIsEditing(false);
       loadCourses();
     } catch (err) {
@@ -102,7 +118,11 @@ const CoursesAdmin: React.FC = () => {
   };
 
   const handleEdit = (course: any) => {
-    setFormData(course);
+    setFormData({
+      ...course,
+      teacherId: course.teacherId._id,
+    });
+    setImagePreview(course.image || null);
     setIsEditing(true);
   };
 
@@ -204,26 +224,41 @@ const CoursesAdmin: React.FC = () => {
               <input
                 type="file"
                 name="image"
-                onChange={(e) =>
+                onChange={(e) => {
+                  const file = e.target.files?.[0] || null;
                   setFormData({
                     ...formData,
-                    image: e.target.files?.[0] || null,
-                  })
-                }
+                    image: file,
+                  });
+                  if (file) {
+                    setImagePreview(URL.createObjectURL(file));
+                  }
+                }}
               />
             </label>
+            {imagePreview && (
+              <div className="preview">
+                <img src={imagePreview} alt="Preview" />
+              </div>
+            )}
           </div>
 
           <div className="form-row">
             <label>
-              Teacher Id
-              <input
-                type="text"
+              Teacher
+              <select
                 name="teacherId"
-                placeholder="Teacher Id"
                 value={formData.teacherId}
                 onChange={handleChange}
-              />
+                required
+              >
+                <option value="">Select a teacher</option>
+                {teachers.map((teacher) => (
+                  <option key={teacher._id} value={teacher._id}>
+                    {teacher.name}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="checkbox-label">

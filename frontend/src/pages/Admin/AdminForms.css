@@ -1,4 +1,5 @@
-.add ,.list {
+.add,
+.list {
   margin: 20px;
   padding: 10px;
   border: 1px solid black;
@@ -55,13 +56,11 @@ button[type="submit"]:hover {
   filter: brightness(1.1);
 }
 
-
 .comp-list {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin: 20px;
-
+  margin: 5px;
 }
 
 .comp-card {
@@ -69,13 +68,13 @@ button[type="submit"]:hover {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
+  padding: 8px 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   width: 100%;
   border: 1px solid black;
   border-radius: 10px;
 }
-.main-h{
+.main-h {
   text-align: center;
   margin-top: 20px;
 }
@@ -93,7 +92,6 @@ button[type="submit"]:hover {
   display: flex;
   gap: 10px;
 }
-
 
 .edit-btn,
 .delete-btn {
@@ -121,4 +119,18 @@ button[type="submit"]:hover {
 
 .delete-btn:hover {
   background-color: #c0392b;
+}
+.preview img {
+  margin-top: 10px;
+  width: 150px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+@media (max-width: 768px) {
+  .edit-btn,
+  .delete-btn {
+    padding: 4px 6px;
+  }
 }

@@ -53,6 +53,11 @@ const Search: React.FC = () => {
             placeholder="Search for over 50+ courses"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch();
+              }
+            }}
           />
           <button className="button search-btn" onClick={handleSearch}>
             Search
