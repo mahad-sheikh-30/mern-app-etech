@@ -4,6 +4,7 @@ const auth = require("../middleware/auth");
 const Enrollment = require("../models/enrollment");
 const Course = require("../models/course");
 const { User } = require("../models/user");
+const Transaction = require("../models/transaction");
 
 const router = express.Router();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -47,6 +48,32 @@ router.post("/create-checkout-session", auth, async (req, res) => {
   }
 });
 
+router.post("/create-payment-intent", auth, async (req, res) => {
+  try {
+    const { courseId } = req.body;
+    const userId = req.user._id;
+
+    if (!courseId) return res.status(400).json({ error: "courseId required" });
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ error: "Course not found" });
+
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount: Math.round(course.price * 100),
+      currency: "usd",
+      metadata: { userId: userId.toString(), courseId: courseId.toString() },
+      automatic_payment_methods: { enabled: true },
+    });
+
+    res.send({
+      clientSecret: paymentIntent.client_secret,
+    });
+  } catch (err) {
+    console.error("Payment intent error:", err.message);
+    res.status(500).json({ error: "Payment intent creation failed" });
+  }
+});
+
 const handleWebhook = async (req, res) => {
   const sig = req.headers["stripe-signature"];
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -64,25 +91,87 @@ const handleWebhook = async (req, res) => {
     const { userId, courseId } = session.metadata;
 
     try {
-      const existing = await Enrollment.findOne({ userId, courseId });
-      if (!existing) {
-        await Enrollment.create({ userId, courseId });
-        await Course.findByIdAndUpdate(courseId, {
-          $inc: { studentsCount: 1 },
-        });
-        await User.findByIdAndUpdate(
+      const alreadyExists = await Transaction.findOne({
+        stripeSessionId: session.id,
+      });
+      if (!alreadyExists) {
+        const course = await Course.findById(courseId);
+        await Transaction.create({
           userId,
-          { role: "student" },
-          { new: true }
-        );
-        console.log("Enrollment created for paid user:", userId);
+          courseId,
+          stripeSessionId: session.id,
+          paymentIntentId: session.payment_intent,
+          amount: course.price,
+          paymentMethod: session.payment_method_types[0],
+        });
+        const existing = await Enrollment.findOne({ userId, courseId });
+        if (!existing) {
+          await Enrollment.create({ userId, courseId });
+          await Course.findByIdAndUpdate(courseId, {
+            $inc: { studentsCount: 1 },
+          });
+          await User.findByIdAndUpdate(
+            userId,
+            { role: "student" },
+            { new: true }
+          );
+          console.log("Transaction + Enrollment saved for user : ", userId);
+        } else {
+          console.log("Enrollment already exists");
+        }
       } else {
-        console.log("Enrollment already exists:", userId, courseId);
+        console.log("Transaction already exists");
       }
     } catch (err) {
-      console.error("Enrollment save error:", err.message);
+      console.error("Webhook processing error:", err.message);
+    }
+  } else if (event.type === "payment_intent.succeeded") {
+    const intent = event.data.object;
+    const { userId, courseId } = intent.metadata;
+
+    try {
+      const alreadyExists = await Transaction.findOne({
+        paymentIntentId: intent.id,
+      });
+      if (!alreadyExists) {
+        const course = await Course.findById(courseId);
+
+        await Transaction.create({
+          userId,
+          courseId,
+          paymentIntentId: intent.id,
+          amount: course.price,
+          paymentMethod: intent.payment_method_types[0] || "card",
+        });
+
+        const existing = await Enrollment.findOne({ userId, courseId });
+        if (!existing) {
+          await Enrollment.create({ userId, courseId });
+          await Course.findByIdAndUpdate(courseId, {
+            $inc: { studentsCount: 1 },
+          });
+          await User.findByIdAndUpdate(
+            userId,
+            { role: "student" },
+            { new: true }
+          );
+          console.log(
+            "Transaction + Enrollment saved (Elements) for user:",
+            userId
+          );
+        } else {
+          console.log("Enrollment already exists (Elements)");
+        }
+      } else {
+        console.log("Transaction already exists (Elements)");
+      }
+    } catch (err) {
+      console.error("Webhook Elements error:", err.message);
     }
   }
+  // else {
+  //   console.log(`Unhandled event type: ${event.type}`);
+  // }
 
   res.status(200).send();
 };

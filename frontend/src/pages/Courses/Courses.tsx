@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import CourseCard from "../../components/CourseCard/CourseCard";
 import type { Course } from "../../components/CourseCard/CourseCard";
 import "./Courses.css";
-import axios from "axios";
 import searchIcon from "../../assets/search.png";
 import { useLocation } from "react-router-dom";
 import { getAllCourses } from "../../api/getService";

@@ -21,7 +21,7 @@
 .instruct-title {
   color: var(--primary);
 }
-.action-btn {
+.exp-teach {
   border: none;
   background: linear-gradient(
     140deg,
@@ -29,6 +29,7 @@
     var(--secondary)
   ) !important;
   color: white;
+  text-decoration: none;
 }
 .action-btn:hover {
   filter: brightness(1.05);

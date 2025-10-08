@@ -81,6 +81,12 @@ const Navbar: React.FC = () => {
                         <hr />
                       </>
                     )}
+                    {role === "student" && (
+                      <>
+                        <Link to="/transactions">My Transactions</Link>
+                        <hr />
+                      </>
+                    )}
                     <button onClick={handleSignOut} className=" button">
                       Sign Out
                     </button>
@@ -149,6 +155,34 @@ const Navbar: React.FC = () => {
         </ul>
 
         <div className="mobile-buttons">
+          <h4>{name?.toUpperCase()}</h4>
+          <hr />
+          <p>{email}</p>
+          <hr />
+          <h4>{role?.toUpperCase()}</h4>
+          <hr />
+
+          {role === "admin" && (
+            <>
+              <button
+                onClick={() => {
+                  navigate("/admin");
+                  setIsMenuOpen(false);
+                }}
+                className="button admin-btn"
+              >
+                Admin Panel
+              </button>
+            </>
+          )}
+          {role === "student" && (
+            <>
+              <Link to="/transactions" onClick={() => setIsMenuOpen(false)}>
+                My Transactions
+              </Link>
+              <hr />
+            </>
+          )}
           {!token ? (
             <Link to="/signin" onClick={() => setIsMenuOpen(false)}>
               <button className="sign-in-btn button">Sign In</button>

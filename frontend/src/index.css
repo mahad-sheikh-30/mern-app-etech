@@ -8,7 +8,7 @@
   --secondary: #f00ae8;
   --glass-bg: rgba(255, 255, 255, 0.7);
   --shadow: 0 10px 30px rgba(97, 6, 109, 0.08);
-  --clr-bg: linear-gradient(140deg, var(--purple), var(--pink));
+  --clr-bg: linear-gradient(140deg, var(--primary), var(--secondary));
   --ring: #2a2f3c;
   --panel: #0f1420;
 }

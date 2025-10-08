@@ -7,13 +7,14 @@ import About from "./pages/About/About";
 import Contact from "./pages/Contact/Contact";
 import SignIn from "./pages/SignIn/SignIn";
 import SignUp from "./pages/SignUp/SignUp";
-
+import Transactions from "./pages/Transactions/Transactions";
 import AdminPanel from "./pages/Admin/AdminPanel";
 import CoursesAdmin from "./pages/Admin/CoursesAdmin";
 import TeachersAdmin from "./pages/Admin/TeachersAdmin";
 import EnrollmentsAdmin from "./pages/Admin/EnrollmentsAdmin";
 import Success from "./pages/Success/Success";
 import Cancel from "./pages/Cancel/Cancel";
+import PaymentPage from "./pages/Payment/Payment";
 
 import MainLayout from "./layouts/MainLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -32,6 +33,8 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/transactions" element={<Transactions />} />
+          <Route path="/checkout" element={<PaymentPage />} />
           <Route path="/success" element={<Success />} />
           <Route path="/cancel" element={<Cancel />} />
         </Route>

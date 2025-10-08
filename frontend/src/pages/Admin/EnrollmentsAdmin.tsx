@@ -29,6 +29,8 @@ const EnrollmentsAdmin: React.FC = () => {
     }
   };
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this enrollment?"))
+      return;
     try {
       const res = await axios.delete(
         `http://localhost:8080/api/enrollments/${id}`,
@@ -61,28 +63,32 @@ const EnrollmentsAdmin: React.FC = () => {
         <hr />
         <div className="comp-list">
           <div className="comp-list">
-            {enrollments.map((enroll) => (
-              <div key={enroll._id} className="comp-card">
-                <div className="info">
-                  <p>
-                    <strong>Student: </strong> {enroll.userId?.name}
-                  </p>
-                  <p>
-                    <strong>Course: </strong> {enroll.courseId?.title}
-                  </p>
-                  <p>
-                    <strong>Teacher: </strong>{" "}
-                    {enroll.courseId?.teacherId?.name}
-                  </p>
+            {enrollments.length === 0 ? (
+              <p>No enrollments found.</p>
+            ) : (
+              enrollments.map((enroll) => (
+                <div key={enroll._id} className="comp-card">
+                  <div className="info">
+                    <p>
+                      <strong>Student: </strong> {enroll.userId?.name}
+                    </p>
+                    <p>
+                      <strong>Course: </strong> {enroll.courseId?.title}
+                    </p>
+                    <p>
+                      <strong>Teacher: </strong>{" "}
+                      {enroll.courseId?.teacherId?.name}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDelete(enroll._id)}
+                    className="delete-btn"
+                  >
+                    Delete
+                  </button>
                 </div>
-                <button
-                  onClick={() => handleDelete(enroll._id)}
-                  className="delete-btn"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </div>

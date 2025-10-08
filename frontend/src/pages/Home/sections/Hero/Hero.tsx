@@ -27,7 +27,7 @@ const Hero: React.FC = () => {
             </p>
             <div className="hero-btns">
               <Link to="/courses">
-                <button className="enroll-btn">Enroll Now</button>
+                <button className="enroll-btn">Explore Now</button>
               </Link>
               <div className="what-new">
                 <img src={badge} alt="Badge" />

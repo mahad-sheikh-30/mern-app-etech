@@ -134,8 +134,10 @@ const TeachersAdmin: React.FC = () => {
                 type="number"
                 name="rating"
                 placeholder="Rating"
-                value={formData.rating}
+                value={formData.rating || ""}
                 onChange={handleChange}
+                min="0"
+                max="5"
               />
             </label>
             <label>

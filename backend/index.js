@@ -11,6 +11,7 @@ const teacherRoutes = require("./routes/teachers");
 const courseRoutes = require("./routes/courses");
 const enrollmentRoutes = require("./routes/enrollments");
 const paymentRoutes = require("./routes/payment");
+const transactionRoutes = require("./routes/transactions");
 const { handleWebhook } = require("./routes/payment");
 
 const app = express();
@@ -32,6 +33,7 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/courses", courseRoutes);
 app.use("/api/enrollments", enrollmentRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/transactions", transactionRoutes);
 
 const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`✅ Listening on port ${port}...`));

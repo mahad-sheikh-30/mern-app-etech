@@ -62,7 +62,7 @@ const CoursesAdmin: React.FC = () => {
       setFormData({
         ...formData,
         price: priceValue,
-        tag: priceValue === 0 ? "Free" : "Premium",
+        tag: priceValue <= 0 ? "Free" : "Premium",
       });
     } else {
       setFormData({ ...formData, [name]: value });
@@ -191,8 +191,9 @@ const CoursesAdmin: React.FC = () => {
                 type="number"
                 name="price"
                 placeholder="Price"
-                value={formData.price}
+                value={formData.price || ""}
                 onChange={handleChange}
+                min="0"
               />
             </label>
 
@@ -202,8 +203,9 @@ const CoursesAdmin: React.FC = () => {
                 type="number"
                 name="coursesCount"
                 placeholder="Lessons Count"
-                value={formData.coursesCount}
+                value={formData.coursesCount || ""}
                 onChange={handleChange}
+                min="1"
               />
             </label>
           </div>
@@ -215,8 +217,9 @@ const CoursesAdmin: React.FC = () => {
                 type="number"
                 name="studentsCount"
                 placeholder="Students Count"
-                value={formData.studentsCount}
+                value={formData.studentsCount || ""}
                 onChange={handleChange}
+                min="0"
               />
             </label>
 

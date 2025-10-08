@@ -18,7 +18,10 @@ export interface Course {
   popular?: boolean;
 }
 
-const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
+const CourseCard: React.FC<{ course: Course; checkout?: boolean }> = ({
+  course,
+  checkout = false,
+}) => {
   const navigate = useNavigate();
 
   const { enrolledCourses, addEnrollment } = useEnrolledCourses();
@@ -56,13 +59,15 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
         return;
       }
 
-      const res = await axios.post(
-        "http://localhost:8080/api/payment/create-checkout-session",
-        { courseId: course._id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      navigate("/checkout", { state: { course } });
 
-      window.location.href = res.data.url;
+      // const res = await axios.post(
+      //   "http://localhost:8080/api/payment/create-checkout-session",
+      //   { courseId: course._id },
+      //   { headers: { Authorization: `Bearer ${token}` } }
+      // );
+
+      // window.location.href = res.data.url;
     } catch (error: any) {
       console.error("Payment session failed:", error);
       alert(
@@ -99,8 +104,9 @@ const CourseCard: React.FC<{ course: Course }> = ({ course }) => {
               {course.teacherId?.name || "Not assigned yet"}
             </span>
           </div>
-
-          {isEnroll ? (
+          {checkout ? (
+            <></>
+          ) : isEnroll ? (
             <button className="enroll-btn enrolled-btn" disabled>
               Enrolled
             </button>

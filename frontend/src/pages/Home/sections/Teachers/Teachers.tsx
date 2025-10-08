@@ -1,6 +1,6 @@
 import teacherImg from "../../../../assets/teacher.png";
 import "./Teachers.css";
-
+import { Link } from "react-router-dom";
 const perks = [
   "Global Impact",
   "Flexible Schedule",
@@ -32,7 +32,9 @@ const Teachers = () => (
           <li key={i}>{perk}</li>
         ))}
       </ul>
-      <button className="action-btn button">Call To Action Button</button>
+      <Link to="/teachers" className="exp-teach button">
+        Explore Teachers
+      </Link>
     </div>
     <div className="teacher-pic">
       <div className="teach-div">
