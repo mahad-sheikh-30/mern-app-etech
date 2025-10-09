@@ -4,8 +4,12 @@ const queryClient = new QueryClient();
 import "./index.css";
 import App from "./App.tsx";
 
+import { UserProvider } from "./context/UserContext";
+
 createRoot(document.getElementById("root")!).render(
-  <QueryClientProvider client={queryClient}>
-    <App />
-  </QueryClientProvider>
+  <UserProvider>
+    <QueryClientProvider client={queryClient}>
+      <App />
+    </QueryClientProvider>
+  </UserProvider>
 );

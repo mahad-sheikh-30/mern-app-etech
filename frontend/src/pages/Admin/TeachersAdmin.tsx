@@ -41,6 +41,7 @@ const TeachersAdmin: React.FC = () => {
     setFormData(teacher);
     setImagePreview(teacher.image || null);
     setIsEditing(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id: string) => {

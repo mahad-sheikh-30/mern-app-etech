@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Payment.css";
+import { useUser } from "../../context/UserContext";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -9,7 +10,8 @@ import {
   CardExpiryElement,
   CardCvcElement,
 } from "@stripe/react-stripe-js";
-import axios from "axios";
+
+import API from "../../api/axiosInstance";
 import { useLocation, useNavigate } from "react-router-dom";
 import CourseCard from "../../components/CourseCard/CourseCard";
 import type { Course } from "../../components/CourseCard/CourseCard";
@@ -25,6 +27,7 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { updateRole } = useUser();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,6 +49,7 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
       setLoading(false);
     } else if (paymentIntent?.status === "succeeded") {
       alert("Payment successful!");
+      updateRole("student");
       navigate(`/courses`);
     }
   };
@@ -101,14 +105,7 @@ const PaymentPage: React.FC = () => {
 
   useEffect(() => {
     if (!course?._id) return;
-
-    const token = localStorage.getItem("token");
-    axios
-      .post(
-        "http://localhost:8080/api/payment/create-payment-intent",
-        { courseId: course._id },
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
+    API.post("/payment/create-payment-intent", { courseId: course._id })
       .then((res) => setClientSecret(res.data.clientSecret))
       .catch((err) => {
         console.error(err);

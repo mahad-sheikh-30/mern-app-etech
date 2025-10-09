@@ -3,22 +3,24 @@ import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import crossImg from "../../assets/closee.png";
 import userImg from "../../assets/user-circle.png";
+import { useUser } from "../../context/UserContext";
+
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const { user, logout } = useUser();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
 
   const handleSignOut = () => {
-    localStorage.removeItem("token");
+    logout();
     navigate("/signin");
     setIsMenuOpen(false);
   };
 
-  const name = localStorage.getItem("name");
-  const email = localStorage.getItem("email");
-  const role = localStorage.getItem("role");
-  console.log(name + "   " + email);
+  const name = user?.name;
+  const email = user?.email;
+  const role = user?.role;
 
   return (
     <>
@@ -46,7 +48,7 @@ const Navbar: React.FC = () => {
 
         <div className="sign-trial">
           <button className="trial-btn button">Free Trial</button>
-          {!token ? (
+          {!user ? (
             <Link to="/signin">
               <button className="sign-in-btn button">Sign In</button>
             </Link>
@@ -183,7 +185,7 @@ const Navbar: React.FC = () => {
               <hr />
             </>
           )}
-          {!token ? (
+          {!user ? (
             <Link to="/signin" onClick={() => setIsMenuOpen(false)}>
               <button className="sign-in-btn button">Sign In</button>
             </Link>

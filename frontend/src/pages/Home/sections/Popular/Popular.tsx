@@ -2,21 +2,21 @@ import React, { useEffect, useState } from "react";
 import CourseCard from "../../../../components/CourseCard/CourseCard";
 import type { Course } from "../../../../components/CourseCard/CourseCard";
 import "./Popular.css";
-import axios from "axios";
 import { getAllCourses } from "../../../../api/courseApi";
+import { getEnrolledCourses } from "../../../../api/enrollmentApi";
+import { useQuery } from "@tanstack/react-query";
 
 const Popular: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [popularCourses, setPopularCourses] = useState<Course[]>([]);
+  const { data: allCourses = [], isLoading } = useQuery({
+    queryKey: ["courses"],
+    queryFn: getAllCourses,
+  });
+  const { data: enrolledCourses = [] } = useQuery({
+    queryKey: ["enrolled"],
+    queryFn: getEnrolledCourses,
+  });
 
-  useEffect(() => {
-    (async () => {
-      const data = await getAllCourses();
-      const popularOnly = data.filter((course: Course) => course.popular);
-      setPopularCourses(popularOnly);
-      setLoading(false);
-    })();
-  }, []);
+  const popularCourses = allCourses.filter((course: Course) => course.popular);
 
   return (
     <section className="popular" id="offers">
@@ -28,12 +28,16 @@ const Popular: React.FC = () => {
           success in every stage of your educational journey.
         </p>
       </div>
-      {loading ? (
+      {isLoading ? (
         <h2>Loading popular courses...</h2>
       ) : (
         <div className="popular-cards">
-          {popularCourses.map((course) => (
-            <CourseCard key={course._id} course={course} />
+          {popularCourses.map((course: Course) => (
+            <CourseCard
+              key={course._id}
+              course={course}
+              enrolledCourses={enrolledCourses}
+            />
           ))}
         </div>
       )}

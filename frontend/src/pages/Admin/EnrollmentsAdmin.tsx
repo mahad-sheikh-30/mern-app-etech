@@ -2,13 +2,14 @@ import React from "react";
 import { useState, useEffect } from "react";
 import API from "../../api/axiosInstance";
 import "./AdminForms.css";
+import { useUser } from "../../context/UserContext";
 import { deleteEnrollment } from "../../api/enrollmentApi";
 
 const EnrollmentsAdmin: React.FC = () => {
   const [enrollments, setEnrollments] = useState<any[]>([]);
+  const { updateRole, user } = useUser();
 
-  const token = localStorage.getItem("token");
-  if (!token) {
+  if (!user?.token) {
     alert("Please sign in first!");
     return;
   }
@@ -18,11 +19,7 @@ const EnrollmentsAdmin: React.FC = () => {
   }, []);
   const fetchEnrollments = async () => {
     try {
-      const res = await API.get("/enrollments", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await API.get("/enrollments");
       setEnrollments(res.data);
       console.log(res.data);
     } catch (err) {
@@ -35,7 +32,7 @@ const EnrollmentsAdmin: React.FC = () => {
     try {
       const res = await deleteEnrollment(id);
       if (res.newRole) {
-        localStorage.setItem("role", res.newRole);
+        updateRole(res.newRole);
       }
       alert(res.message);
       fetchEnrollments();

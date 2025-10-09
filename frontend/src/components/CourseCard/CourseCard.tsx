@@ -1,9 +1,10 @@
 import "./CourseCard.css";
 import React, { useState, useEffect } from "react";
 import type { Teacher } from "../TeacherCard/TeacherCard";
-
-import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createEnrollment } from "../../api/enrollmentApi";
+import { useUser } from "../../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 export interface Course {
   _id: string;
@@ -25,26 +26,29 @@ const CourseCard: React.FC<{
   onEnrollSuccess?: (courseId: string) => void;
 }> = ({ course, checkout = false, enrolledCourses = [], onEnrollSuccess }) => {
   const navigate = useNavigate();
-  // useEffect(() => {
-  //   loadEnrolledCourses();
-  // }, []);
+  const { updateRole } = useUser();
+  const queryClient = useQueryClient();
 
-  // const loadEnrolledCourses = async () => {
-  //   try {
-  //     const data = await getEnrolledCourses();
-  //     console.log(data);
-  //     setEnrolledCourses(data);
-  //   } catch (err) {
-  //     console.error("Error fetching courses:", err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-  // const [enrolledCourses, setEnrolledCourses] = useState<String[]>([]);
+  const enrollMutation = useMutation({
+    mutationFn: (courseId: string) => createEnrollment({ courseId }),
+    onSuccess: (_, courseId) => {
+      queryClient.setQueryData<string[]>(["enrolled"], (old = []) => [
+        ...old,
+        courseId,
+      ]);
+      alert("You have been enrolled in this free course!");
+      updateRole("student");
+      onEnrollSuccess?.(courseId);
+    },
+    onError: (err: any) => {
+      alert(err?.response?.data?.error || "Enrollment failed. Try again.");
+    },
+  });
 
   const [modalOpen, setModalOpen] = useState(false);
   const isEnroll = enrolledCourses.includes(course._id);
   const [loading, setLoading] = useState(false);
+
   const handleEnroll = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (loading || isEnroll) return;
@@ -63,16 +67,15 @@ const CourseCard: React.FC<{
       setLoading(true);
 
       if (course.price === 0) {
-        await createEnrollment({ courseId: course._id });
-        localStorage.setItem("role", "student");
-        alert("You have been enrolled in this free course!");
-        onEnrollSuccess?.(course._id);
-        setLoading(false);
+        enrollMutation.mutate(course._id, {
+          onSettled: () => setLoading(false),
+        });
         return;
       }
 
       navigate("/checkout", { state: { course } });
 
+      //stripe checkout page
       // const res = await axios.post(
       //   "http://localhost:8080/api/payment/create-checkout-session",
       //   { courseId: course._id },

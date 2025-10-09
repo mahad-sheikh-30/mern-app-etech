@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import CourseCard from "../../components/CourseCard/CourseCard";
 import type { Course } from "../../components/CourseCard/CourseCard";
-
+import { useQuery } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import "./Courses.css";
 import searchIcon from "../../assets/search.png";
 import { useLocation } from "react-router-dom";
@@ -9,61 +10,88 @@ import { getAllCourses } from "../../api/courseApi";
 import { getEnrolledCourses } from "../../api/enrollmentApi";
 
 const Courses: React.FC = () => {
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
-  const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
-  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialSearch = queryParams.get("search") || "";
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
 
-  useEffect(() => {
-    loadCourses();
-  }, []);
+  // const [courses, setCourses] = useState<Course[]>([]);
+  // const [loading, setLoading] = useState(true);
+  // const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  // const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
 
-  const loadCourses = async () => {
-    try {
-      const [allCourses, enrolled] = await Promise.all([
-        getAllCourses(),
-        getEnrolledCourses(),
-      ]);
-      setCourses(allCourses);
-      setFilteredCourses(allCourses);
-      setEnrolledCourses(enrolled);
+  const queryClient = useQueryClient();
 
-      if (initialSearch) {
-        const lower = initialSearch.toLowerCase();
-        setSearchTerm(initialSearch);
-        setFilteredCourses(
-          allCourses.filter((c: Course) =>
-            c.title.toLowerCase().includes(lower)
-          )
-        );
-      }
-    } catch (err) {
-      console.error("Error fetching courses:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: courses = [], isLoading: coursesLoading } = useQuery({
+    queryKey: ["courses"],
+    queryFn: getAllCourses,
+  });
+
+  const { data: enrolledCourses = [], isLoading: enrolledLoading } = useQuery({
+    queryKey: ["enrolled"],
+    queryFn: getEnrolledCourses,
+  });
+
+  // useEffect(() => {
+  //   loadCourses();
+  // }, []);
+
+  // const loadCourses = async () => {
+  //   try {
+  //     const [allCourses, enrolled] = await Promise.all([
+  //       getAllCourses(),
+  //       getEnrolledCourses(),
+  //     ]);
+  //     setCourses(allCourses);
+  //     setFilteredCourses(allCourses);
+  //     setEnrolledCourses(enrolled);
+
+  //     if (initialSearch) {
+  //       const lower = initialSearch.toLowerCase();
+  //       setSearchTerm(initialSearch);
+  //       setFilteredCourses(
+  //         allCourses.filter((c: Course) =>
+  //           c.title.toLowerCase().includes(lower)
+  //         )
+  //       );
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching courses:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const loading = coursesLoading || enrolledLoading;
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toLowerCase();
-    setSearchTerm(value);
+    setSearchTerm(e.target.value.toLowerCase());
 
-    if (!value) {
-      setFilteredCourses(courses);
-    } else {
-      setFilteredCourses(
-        courses.filter((c) => c.title.toLowerCase().includes(value))
-      );
-    }
+    // if (!value) {
+    //   setFilteredCourses(courses);
+    // } else {
+    //   setFilteredCourses(
+    //     courses.filter((c) => c.title.toLowerCase().includes(value))
+    //   );
+    // }
   };
+  const filteredCourses = useMemo(() => {
+    const search = (searchTerm || initialSearch).toLowerCase();
+    return courses.filter((c: Course) =>
+      c.title.toLowerCase().includes(search)
+    );
+  }, [courses, searchTerm, initialSearch]);
+
   const handleEnrollSuccess = (courseId: string) => {
-    setEnrolledCourses((prev) => [...prev, courseId]);
+    queryClient.setQueryData<string[]>(["enrolled"], (old = []) => [
+      ...old,
+      courseId,
+    ]);
+    queryClient.invalidateQueries({ queryKey: ["enrolled"] });
   };
+
   if (loading) return <h2>Loading courses...</h2>;
 
   return (
@@ -95,8 +123,8 @@ const Courses: React.FC = () => {
             <strong>
               <p
                 onClick={() => {
-                  setFilteredCourses(
-                    [...filteredCourses].sort((a, b) => a.price - b.price)
+                  filteredCourses.sort(
+                    (a: Course, b: Course) => a.price - b.price
                   );
                 }}
               >
@@ -107,8 +135,8 @@ const Courses: React.FC = () => {
             <strong>
               <p
                 onClick={() => {
-                  setFilteredCourses(
-                    [...filteredCourses].sort((a, b) => b.price - a.price)
+                  filteredCourses.sort(
+                    (a: Course, b: Course) => b.price - a.price
                   );
                 }}
               >
@@ -119,10 +147,8 @@ const Courses: React.FC = () => {
             <strong>
               <p
                 onClick={() => {
-                  setFilteredCourses(
-                    [...filteredCourses].sort(
-                      (a, b) => a.studentsCount - b.studentsCount
-                    )
+                  filteredCourses.sort(
+                    (a: Course, b: Course) => a.studentsCount - b.studentsCount
                   );
                 }}
               >
@@ -133,10 +159,8 @@ const Courses: React.FC = () => {
             <strong>
               <p
                 onClick={() => {
-                  setFilteredCourses(
-                    [...filteredCourses].sort(
-                      (a, b) => a.coursesCount - b.coursesCount
-                    )
+                  filteredCourses.sort(
+                    (a: Course, b: Course) => a.coursesCount - b.coursesCount
                   );
                 }}
               >
@@ -149,7 +173,7 @@ const Courses: React.FC = () => {
 
       <div className="popular-cards">
         {filteredCourses.length > 0 ? (
-          filteredCourses.map((course) => (
+          filteredCourses.map((course: Course) => (
             <CourseCard
               key={course._id}
               course={course}

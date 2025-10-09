@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
 import "./AdminForms.css";
 import { getAllTeachers } from "../../api/teacherApi";
 import {
@@ -8,6 +9,8 @@ import {
   updateCourse,
   deleteCourse,
 } from "../../api/courseApi";
+import type { Course } from "../../components/CourseCard/CourseCard";
+import type { Teacher } from "../../components/TeacherCard/TeacherCard";
 
 const CoursesAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -23,37 +26,75 @@ const CoursesAdmin: React.FC = () => {
     popular: false,
   });
 
-  const [courses, setCourses] = useState<any[]>([]);
-  const [teachers, setTeachers] = useState<any[]>([]);
+  // const [courses, setCourses] = useState<any[]>([]);
+  // const [teachers, setTeachers] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  // const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadCourses();
-    loadTeachers();
-  }, []);
+  const queryClient = useQueryClient();
 
-  const loadTeachers = async () => {
-    try {
-      const data = await getAllTeachers();
-      setTeachers(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Failed to load teachers:", err);
-    }
-  };
+  const { data: courses = [], isLoading: coursesLoading } = useQuery({
+    queryKey: ["courses"],
+    queryFn: getAllCourses,
+  });
+  const { data: teachers = [], isLoading: teachersLoading } = useQuery({
+    queryKey: ["teachers"],
+    queryFn: getAllTeachers,
+  });
 
-  const loadCourses = async () => {
-    try {
-      const data = await getAllCourses();
-      setCourses(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Failed to load courses:", err);
-    }
-  };
+  const loading = coursesLoading || teachersLoading;
+
+  const createMutation = useMutation({
+    mutationFn: (form: FormData) => createCourse(form),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      alert("Course added!");
+    },
+    onError: () => alert("Failed to add course!"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, form }: { id: string; form: FormData }) =>
+      updateCourse(id, form),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      alert("Course updated!");
+    },
+    onError: () => alert("Failed to update course!"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteCourse(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["courses"] }),
+    onError: () => alert("Failed to delete course!"),
+  });
+
+  // useEffect(() => {
+  //   loadCourses();
+  //   loadTeachers();
+  // }, []);
+
+  // const loadTeachers = async () => {
+  //   try {
+  //     const data = await getAllTeachers();
+  //     setTeachers(data);
+  //     setLoading(false);
+  //   } catch (err) {
+  //     console.error("Failed to load teachers:", err);
+  //   }
+  // };
+
+  // const loadCourses = async () => {
+  //   try {
+  //     const data = await getAllCourses();
+  //     setCourses(data);
+  //     setLoading(false);
+  //   } catch (err) {
+  //     console.error("Failed to load courses:", err);
+  //   }
+  // };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -96,11 +137,13 @@ const CoursesAdmin: React.FC = () => {
       }
 
       if (isEditing) {
-        await updateCourse(formData._id, fileData);
-        alert("Course updated!");
+        await updateMutation.mutateAsync({ id: formData._id, form: fileData });
+        // await updateCourse(formData._id, fileData);
+        // alert("Course updated!");
       } else {
-        await createCourse(fileData);
-        alert("Course added!");
+        await createMutation.mutateAsync(fileData);
+        // await createCourse(fileData);
+        // alert("Course added!");
       }
 
       setFormData({
@@ -116,8 +159,9 @@ const CoursesAdmin: React.FC = () => {
         popular: false,
       });
 
+      setImagePreview(null);
       setIsEditing(false);
-      await loadCourses();
+      // await loadCourses();
     } catch (err) {
       console.error("Error saving course:", err);
       alert("Failed!");
@@ -133,13 +177,15 @@ const CoursesAdmin: React.FC = () => {
     });
     setImagePreview(course.image || null);
     setIsEditing(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
-      await deleteCourse(id);
-      loadCourses();
+      await deleteMutation.mutateAsync(id);
+      // await deleteCourse(id);
+      // loadCourses();
     } catch (err) {
       console.error("Error deleting course:", err);
       alert("Delete failed");
@@ -258,7 +304,7 @@ const CoursesAdmin: React.FC = () => {
                 required
               >
                 <option value="">Select a teacher</option>
-                {teachers.map((teacher) => (
+                {teachers.map((teacher: any) => (
                   <option key={teacher._id} value={teacher._id}>
                     {teacher.name}
                   </option>
@@ -290,7 +336,7 @@ const CoursesAdmin: React.FC = () => {
           <h2>Loading courses...</h2>
         ) : (
           <div className="comp-list">
-            {courses.map((course) => (
+            {courses.map((course: Course) => (
               <div key={course._id} className="comp-card">
                 <div className="info">
                   <h3>{course.title}</h3>

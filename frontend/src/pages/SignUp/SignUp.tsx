@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../SignIn/Auth.css";
-import axios from "axios";
+import API from "../../api/axiosInstance";
 
 const SignUp: React.FC = () => {
   const [data, setData] = useState({
@@ -22,8 +22,7 @@ const SignUp: React.FC = () => {
     e.preventDefault();
 
     try {
-      const url = "http://localhost:8080/api/users";
-      const { data: res } = await axios.post(url, data);
+      const { data: res } = await API.post("/users", data);
       navigate("/signin");
       console.log(res.message);
     } catch (error: any) {

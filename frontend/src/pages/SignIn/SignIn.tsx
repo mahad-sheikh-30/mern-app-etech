@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "./Auth.css";
-import axios from "axios";
+import { useUser } from "../../context/UserContext";
+import API from "../../api/axiosInstance";
 
 const SignIn: React.FC = () => {
   const [data, setData] = useState({
@@ -9,6 +10,8 @@ const SignIn: React.FC = () => {
     password: "",
   });
   const [error, setError] = useState("");
+  const { setUser } = useUser();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setData({ ...data, [e.target.name]: e.target.value });
   };
@@ -16,13 +19,14 @@ const SignIn: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      const url = "http://localhost:8080/api/auth";
-      const { data: res } = await axios.post(url, data);
+      const { data: res } = await API.post("/auth", data);
 
-      localStorage.setItem("token", res.data);
-      localStorage.setItem("role", res.role);
-      localStorage.setItem("name", res.name);
-      localStorage.setItem("email", res.email);
+      setUser({
+        name: res.name,
+        email: res.email,
+        role: res.role,
+        token: res.data,
+      });
 
       if (res.role === "admin") {
         window.location.href = "/admin";
