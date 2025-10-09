@@ -15,6 +15,7 @@ import EnrollmentsAdmin from "./pages/Admin/EnrollmentsAdmin";
 import Success from "./pages/Success/Success";
 import Cancel from "./pages/Cancel/Cancel";
 import PaymentPage from "./pages/Payment/Payment";
+import AdminTransactions from "./pages/Admin/TransactionsAdmin";
 
 import MainLayout from "./layouts/MainLayout";
 import AdminLayout from "./layouts/AdminLayout";
@@ -51,6 +52,7 @@ function App() {
           <Route path="courses" element={<CoursesAdmin />} />
           <Route path="teachers" element={<TeachersAdmin />} />
           <Route path="enrollments" element={<EnrollmentsAdmin />} />
+          <Route path="transactions" element={<AdminTransactions />} />
         </Route>
       </Routes>
     </BrowserRouter>

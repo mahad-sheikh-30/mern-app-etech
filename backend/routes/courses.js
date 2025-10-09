@@ -4,7 +4,10 @@ const router = express.Router();
 const upload = require("../middleware/multer");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
 const Enrollment = require("../models/enrollment");
-router.post("/", upload.single("image"), async (req, res) => {
+const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
+
+router.post("/", auth, admin, upload.single("image"), async (req, res) => {
   try {
     let imageUrl = "";
     if (req.file) {
@@ -41,7 +44,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", upload.single("image"), async (req, res) => {
+router.put("/:id", auth, admin, upload.single("image"), async (req, res) => {
   try {
     const id = req.params.id;
     const updateData = { ...req.body };
@@ -65,7 +68,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
   }
 });
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, admin, async (req, res) => {
   try {
     const id = req.params.id;
     const deleted = await Course.findByIdAndDelete(id);

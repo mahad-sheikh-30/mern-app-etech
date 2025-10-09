@@ -5,6 +5,8 @@ const auth = require("../middleware/auth");
 const router = express.Router();
 const { User } = require("../models/user");
 
+const admin = require("../middleware/admin");
+
 router.post("/", auth, async (req, res) => {
   try {
     const { courseId } = req.body;
@@ -65,12 +67,8 @@ router.get("/my", auth, async (req, res) => {
   }
 });
 
-router.delete("/:id", auth, async (req, res) => {
+router.delete("/:id", auth, admin, async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ error: "Access denied. Admins only." });
-    }
-
     const enrollmentId = req.params.id;
 
     const enrollment = await Enrollment.findByIdAndDelete(enrollmentId);

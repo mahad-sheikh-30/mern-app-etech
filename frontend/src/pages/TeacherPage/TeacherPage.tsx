@@ -3,7 +3,8 @@ import TeacherCard from "../../components/TeacherCard/TeacherCard";
 import type { Teacher } from "../../components/TeacherCard/TeacherCard";
 import "./TeacherPage.css";
 import searchIcon from "../../assets/search.png";
-import { getAllTeachers } from "../../api/getService";
+import { getAllTeachers } from "../../api/teacherApi";
+
 const TeacherPage: React.FC = () => {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +18,7 @@ const TeacherPage: React.FC = () => {
 
   const loadTeachers = async () => {
     try {
-      const data = await getAllTeachers("teachers");
+      const data = await getAllTeachers();
       setTeachers(data);
       setFilteredTeachers(data);
     } catch (err) {

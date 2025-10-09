@@ -1,6 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const { User, validate } = require("../models/user");
+const admin = require("../middleware/admin");
+const auth = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -38,20 +40,13 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.get("/", async (req, res) => {
+router.get("/", auth, admin, async (req, res) => {
   try {
-    const users = await User.find();
-    res.send(users);
+    const users = await User.find().select("-password");
+    res.json(users);
   } catch (err) {
-    res.status(500).send({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
-router.get("/students", async (req, res) => {
-  try {
-    const students = await User.find({ role: "student" });
-    res.send(students);
-  } catch (err) {
-    res.status(500).send({ error: err.message });
-  }
-});
+
 module.exports = router;

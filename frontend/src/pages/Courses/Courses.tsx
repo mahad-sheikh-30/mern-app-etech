@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from "react";
 import CourseCard from "../../components/CourseCard/CourseCard";
 import type { Course } from "../../components/CourseCard/CourseCard";
+
 import "./Courses.css";
 import searchIcon from "../../assets/search.png";
 import { useLocation } from "react-router-dom";
-import { getAllCourses } from "../../api/getService";
+import { getAllCourses } from "../../api/courseApi";
+import { getEnrolledCourses } from "../../api/enrollmentApi";
 
 const Courses: React.FC = () => {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
   const location = useLocation();
@@ -23,15 +26,21 @@ const Courses: React.FC = () => {
 
   const loadCourses = async () => {
     try {
-      const data = await getAllCourses();
-      setCourses(data);
-      setFilteredCourses(data);
+      const [allCourses, enrolled] = await Promise.all([
+        getAllCourses(),
+        getEnrolledCourses(),
+      ]);
+      setCourses(allCourses);
+      setFilteredCourses(allCourses);
+      setEnrolledCourses(enrolled);
 
       if (initialSearch) {
         const lower = initialSearch.toLowerCase();
         setSearchTerm(initialSearch);
         setFilteredCourses(
-          data.filter((c: Course) => c.title.toLowerCase().includes(lower))
+          allCourses.filter((c: Course) =>
+            c.title.toLowerCase().includes(lower)
+          )
         );
       }
     } catch (err) {
@@ -51,6 +60,9 @@ const Courses: React.FC = () => {
         courses.filter((c) => c.title.toLowerCase().includes(value))
       );
     }
+  };
+  const handleEnrollSuccess = (courseId: string) => {
+    setEnrolledCourses((prev) => [...prev, courseId]);
   };
   if (loading) return <h2>Loading courses...</h2>;
 
@@ -138,7 +150,12 @@ const Courses: React.FC = () => {
       <div className="popular-cards">
         {filteredCourses.length > 0 ? (
           filteredCourses.map((course) => (
-            <CourseCard key={course._id} course={course} />
+            <CourseCard
+              key={course._id}
+              course={course}
+              enrolledCourses={enrolledCourses}
+              onEnrollSuccess={handleEnrollSuccess}
+            />
           ))
         ) : (
           <h3>No courses found</h3>

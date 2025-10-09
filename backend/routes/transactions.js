@@ -1,6 +1,7 @@
 const express = require("express");
 const Transaction = require("../models/transaction");
 const auth = require("../middleware/auth");
+const admin = require("../middleware/admin");
 
 const router = express.Router();
 
@@ -15,10 +16,7 @@ router.get("/my", auth, async (req, res) => {
   }
 });
 
-router.get("/", auth, async (req, res) => {
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ error: "Access denied. Admins only." });
-  }
+router.get("/", auth, admin, async (req, res) => {
   try {
     const transactions = await Transaction.find()
       .populate("userId", "name email")

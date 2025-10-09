@@ -3,7 +3,7 @@ import CourseCard from "../../../../components/CourseCard/CourseCard";
 import type { Course } from "../../../../components/CourseCard/CourseCard";
 import "./Popular.css";
 import axios from "axios";
-import { getPopularCourses } from "../../../../api/getService";
+import { getAllCourses } from "../../../../api/courseApi";
 
 const Popular: React.FC = () => {
   const [loading, setLoading] = useState(true);
@@ -11,8 +11,9 @@ const Popular: React.FC = () => {
 
   useEffect(() => {
     (async () => {
-      const data = await getPopularCourses();
-      setPopularCourses(data);
+      const data = await getAllCourses();
+      const popularOnly = data.filter((course: Course) => course.popular);
+      setPopularCourses(popularOnly);
       setLoading(false);
     })();
   }, []);

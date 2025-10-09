@@ -1,9 +1,9 @@
 import "./CourseCard.css";
 import React, { useState, useEffect } from "react";
 import type { Teacher } from "../TeacherCard/TeacherCard";
-import axios from "axios";
+
 import { useNavigate } from "react-router-dom";
-import { useEnrolledCourses } from "../../customHooks/useEnrolledCourses";
+import { createEnrollment } from "../../api/enrollmentApi";
 
 export interface Course {
   _id: string;
@@ -18,13 +18,30 @@ export interface Course {
   popular?: boolean;
 }
 
-const CourseCard: React.FC<{ course: Course; checkout?: boolean }> = ({
-  course,
-  checkout = false,
-}) => {
+const CourseCard: React.FC<{
+  course: Course;
+  checkout?: boolean;
+  enrolledCourses?: string[];
+  onEnrollSuccess?: (courseId: string) => void;
+}> = ({ course, checkout = false, enrolledCourses = [], onEnrollSuccess }) => {
   const navigate = useNavigate();
+  // useEffect(() => {
+  //   loadEnrolledCourses();
+  // }, []);
 
-  const { enrolledCourses, addEnrollment } = useEnrolledCourses();
+  // const loadEnrolledCourses = async () => {
+  //   try {
+  //     const data = await getEnrolledCourses();
+  //     console.log(data);
+  //     setEnrolledCourses(data);
+  //   } catch (err) {
+  //     console.error("Error fetching courses:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  // const [enrolledCourses, setEnrolledCourses] = useState<String[]>([]);
+
   const [modalOpen, setModalOpen] = useState(false);
   const isEnroll = enrolledCourses.includes(course._id);
   const [loading, setLoading] = useState(false);
@@ -46,15 +63,10 @@ const CourseCard: React.FC<{ course: Course; checkout?: boolean }> = ({
       setLoading(true);
 
       if (course.price === 0) {
-        await axios.post(
-          "http://localhost:8080/api/enrollments",
-          { courseId: course._id },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-
+        await createEnrollment({ courseId: course._id });
         localStorage.setItem("role", "student");
-        addEnrollment(course._id);
         alert("You have been enrolled in this free course!");
+        onEnrollSuccess?.(course._id);
         setLoading(false);
         return;
       }

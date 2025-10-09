@@ -1,7 +1,7 @@
 import React, { useReducer, useState } from "react";
 import axios from "axios";
 import "./Contact.css";
-
+import API from "../../api/axiosInstance";
 const Contact: React.FC = () => {
   interface formState {
     name: string;
@@ -52,7 +52,7 @@ const Contact: React.FC = () => {
     dispatch({ type: "SUBMIT" });
 
     try {
-      const res = await axios.post("http://localhost:8080/api/contact", state);
+      const res = await API.post("/contact", state);
       alert("Form submitted successfully!");
       console.log("Response:", res.data);
 

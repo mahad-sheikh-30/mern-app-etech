@@ -1,7 +1,8 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import axios from "axios";
+import API from "../../api/axiosInstance";
 import "./AdminForms.css";
+import { deleteEnrollment } from "../../api/enrollmentApi";
 
 const EnrollmentsAdmin: React.FC = () => {
   const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -17,7 +18,7 @@ const EnrollmentsAdmin: React.FC = () => {
   }, []);
   const fetchEnrollments = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/enrollments", {
+      const res = await API.get("/enrollments", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -32,18 +33,11 @@ const EnrollmentsAdmin: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this enrollment?"))
       return;
     try {
-      const res = await axios.delete(
-        `http://localhost:8080/api/enrollments/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      if (res.data.newRole) {
-        localStorage.setItem("role", res.data.newRole);
+      const res = await deleteEnrollment(id);
+      if (res.newRole) {
+        localStorage.setItem("role", res.newRole);
       }
-      alert(res.data.message);
+      alert(res.message);
       fetchEnrollments();
     } catch (error: any) {
       if (error.response) {

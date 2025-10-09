@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./AdminForms.css";
-import { getAllCourses } from "../../api/getService";
-import { getAllTeachers } from "../../api/getService";
+import { getAllTeachers } from "../../api/teacherApi";
+import {
+  getAllCourses,
+  createCourse,
+  updateCourse,
+  deleteCourse,
+} from "../../api/courseApi";
 
 const CoursesAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -32,7 +37,7 @@ const CoursesAdmin: React.FC = () => {
 
   const loadTeachers = async () => {
     try {
-      const data = await getAllTeachers("teachers");
+      const data = await getAllTeachers();
       setTeachers(data);
       setLoading(false);
     } catch (err) {
@@ -42,13 +47,14 @@ const CoursesAdmin: React.FC = () => {
 
   const loadCourses = async () => {
     try {
-      const data = await getAllCourses("courses");
+      const data = await getAllCourses();
       setCourses(data);
       setLoading(false);
     } catch (err) {
       console.error("Failed to load courses:", err);
     }
   };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -90,16 +96,10 @@ const CoursesAdmin: React.FC = () => {
       }
 
       if (isEditing) {
-        await axios.put(
-          `http://localhost:8080/api/courses/${formData._id}`,
-          fileData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
+        await updateCourse(formData._id, fileData);
         alert("Course updated!");
       } else {
-        await axios.post("http://localhost:8080/api/courses", fileData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        await createCourse(fileData);
         alert("Course added!");
       }
 
@@ -117,7 +117,7 @@ const CoursesAdmin: React.FC = () => {
       });
 
       setIsEditing(false);
-      loadCourses();
+      await loadCourses();
     } catch (err) {
       console.error("Error saving course:", err);
       alert("Failed!");
@@ -138,10 +138,11 @@ const CoursesAdmin: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
-      await axios.delete(`http://localhost:8080/api/courses/${id}`);
+      await deleteCourse(id);
       loadCourses();
     } catch (err) {
       console.error("Error deleting course:", err);
+      alert("Delete failed");
     }
   };
 

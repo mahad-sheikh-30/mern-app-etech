@@ -1,58 +1,35 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
-import "./Transactions.css";
-const Transactions = () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Please sign in first!");
-    return;
-  }
+import TransactionsTable from "../../components/TransactionsTable/TransactionsTable";
+import { getMyTransactions } from "../../api/transactionApi";
+
+const MyTransactions: React.FC = () => {
   const [transactions, setTransactions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     fetchTransactions();
   }, []);
+
   const fetchTransactions = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/transactions/my", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setTransactions(res.data);
+      const data = await getMyTransactions();
+
+      setTransactions(data);
     } catch (err) {
       console.error("Error fetching transactions:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) return <p>Loading your transactions...</p>;
+
   return (
-    <div className="trans-page">
-      <div className="list">
-        <h2>MY Transactions</h2>
-        <div className="comp-list">
-          {transactions.length === 0 ? (
-            <p>No transactions found.</p>
-          ) : (
-            transactions.map((tx) => (
-              <div key={tx.paymentIntentId} className="comp-card">
-                <div className="info">
-                  <p>
-                    <strong>Course:</strong> {tx.courseId?.title || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Amount:</strong> ${tx.amount.toFixed(2)} USD
-                  </p>
-                  <p>
-                    <strong>Date:</strong>{" "}
-                    {new Date(tx.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
+    <div>
+      <h2 style={{ textAlign: "center" }}>My Transactions</h2>
+      <TransactionsTable transactions={transactions} />
     </div>
   );
 };
 
-export default Transactions;
+export default MyTransactions;

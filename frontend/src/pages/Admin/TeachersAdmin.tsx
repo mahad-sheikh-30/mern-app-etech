@@ -1,7 +1,12 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { getAllTeachers } from "../../api/getService";
 import "./AdminForms.css";
+import {
+  getAllTeachers,
+  addTeacher,
+  updateTeacher,
+  deleteTeacher,
+} from "../../api/teacherApi";
 
 const TeachersAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -24,7 +29,7 @@ const TeachersAdmin: React.FC = () => {
 
   const loadTeachers = async () => {
     try {
-      const data = await getAllTeachers("teachers");
+      const data = await getAllTeachers();
       setTeachers(data);
       setLoading(false);
     } catch (err) {
@@ -42,7 +47,7 @@ const TeachersAdmin: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this teacher?"))
       return;
     try {
-      await axios.delete(`http://localhost:8080/api/teachers/${id}`);
+      await deleteTeacher(id);
       loadTeachers();
     } catch (err) {
       console.error("Error deleting teacher:", err);
@@ -67,18 +72,13 @@ const TeachersAdmin: React.FC = () => {
       }
 
       if (isEditing) {
-        await axios.put(
-          `http://localhost:8080/api/teachers/${formData._id}`,
-          fileData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-        alert("Teacher updated!");
+        await updateTeacher(formData._id, fileData);
+        alert("Teacher updated successfully!");
       } else {
-        await axios.post("http://localhost:8080/api/teachers", fileData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-        alert("Teacher Added");
+        await addTeacher(fileData);
+        alert("Teacher added successfully!");
       }
+
       setFormData({
         _id: "",
         image: null as File | null,
@@ -87,6 +87,7 @@ const TeachersAdmin: React.FC = () => {
         rating: 0,
       });
       setIsEditing(false);
+      setImagePreview(null);
       loadTeachers();
     } catch (err) {
       console.error("Error adding teacher:", err);
@@ -138,6 +139,7 @@ const TeachersAdmin: React.FC = () => {
                 onChange={handleChange}
                 min="0"
                 max="5"
+                step="0.1"
               />
             </label>
             <label>
