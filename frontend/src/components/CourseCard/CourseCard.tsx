@@ -52,6 +52,10 @@ const CourseCard: React.FC<{
   const handleEnroll = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (loading || isEnroll) return;
+    if (enrolledCourses.length >= 6) {
+      alert("You have reached the maximum number of enrolled courses (6).");
+      return;
+    }
     try {
       const token = localStorage.getItem("token");
       if (!token) {

@@ -5,8 +5,10 @@ import "./Popular.css";
 import { getAllCourses } from "../../../../api/courseApi";
 import { getEnrolledCourses } from "../../../../api/enrollmentApi";
 import { useQuery } from "@tanstack/react-query";
+import { useUser } from "../../../../context/UserContext";
 
 const Popular: React.FC = () => {
+  const { user } = useUser();
   const { data: allCourses = [], isLoading } = useQuery({
     queryKey: ["courses"],
     queryFn: getAllCourses,
@@ -14,6 +16,7 @@ const Popular: React.FC = () => {
   const { data: enrolledCourses = [] } = useQuery({
     queryKey: ["enrolled"],
     queryFn: getEnrolledCourses,
+    enabled: !!user?.token,
   });
 
   const popularCourses = allCourses.filter((course: Course) => course.popular);

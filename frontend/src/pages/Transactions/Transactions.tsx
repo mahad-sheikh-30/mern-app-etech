@@ -1,28 +1,34 @@
 import React, { useState, useEffect } from "react";
 import TransactionsTable from "../../components/TransactionsTable/TransactionsTable";
 import { getMyTransactions } from "../../api/transactionApi";
+import { useQuery } from "@tanstack/react-query";
 
 const MyTransactions: React.FC = () => {
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [transactions, setTransactions] = useState<any[]>([]);
+  // const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: getMyTransactions,
+  });
 
-  const fetchTransactions = async () => {
-    try {
-      const data = await getMyTransactions();
+  // useEffect(() => {
+  //   fetchTransactions();
+  // }, []);
 
-      setTransactions(data);
-    } catch (err) {
-      console.error("Error fetching transactions:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const fetchTransactions = async () => {
+  //   try {
+  //     const data = await getMyTransactions();
 
-  if (loading) return <p>Loading your transactions...</p>;
+  //     setTransactions(data);
+  //   } catch (err) {
+  //     console.error("Error fetching transactions:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  if (isLoading) return <p>Loading your transactions...</p>;
 
   return (
     <div>

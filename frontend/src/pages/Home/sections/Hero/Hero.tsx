@@ -31,7 +31,7 @@ const Hero: React.FC = () => {
               </Link>
               <div className="what-new">
                 <img src={badge} alt="Badge" />
-                <a href="#">What's New?</a>
+                <Link to="/about">What's New?</Link>
               </div>
             </div>
           </div>
@@ -67,6 +67,54 @@ const Hero: React.FC = () => {
           </div>
         </div>
         <div className="hero-bottom">
+          <div className="scroll-container">
+            <div className="scroll-content">
+              <div className="duolingo">
+                <p className="duolingo">duolingo</p>
+              </div>
+              <div className="magic-leap flexx">
+                <img src={magicleap} alt="Magic Leap" />
+                <p>magic leap</p>
+              </div>
+              <div className="microsoft flexx">
+                <img src={microsoft} alt="Microsoft" />
+                <p>Microsoft</p>
+              </div>
+              <div className="codecov flexx">
+                <img src={codecov} alt="Codecov" />
+                <p>Codecov</p>
+              </div>
+              <div className="user-testing">
+                <p>
+                  <span className="user">User</span>Testing
+                </p>
+              </div>
+              {/* duplicate content for seamless loop */}
+              <div className="duolingo">
+                <p className="duolingo">duolingo</p>
+              </div>
+              <div className="magic-leap flexx">
+                <img src={magicleap} alt="Magic Leap" />
+                <p>magic leap</p>
+              </div>
+              <div className="microsoft flexx">
+                <img src={microsoft} alt="Microsoft" />
+                <p>Microsoft</p>
+              </div>
+              <div className="codecov flexx">
+                <img src={codecov} alt="Codecov" />
+                <p>Codecov</p>
+              </div>
+              <div className="user-testing">
+                <p>
+                  <span className="user">User</span>Testing
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* <div className="hero-bottom">
           <div className="duolingo">
             <p className="duolingo">duolingo</p>
           </div>
@@ -87,7 +135,7 @@ const Hero: React.FC = () => {
               <span className="user">User</span>Testing
             </p>
           </div>
-        </div>
+        </div> */}
       </section>
     </>
   );

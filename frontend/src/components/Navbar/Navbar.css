@@ -46,11 +46,6 @@
   color: var(--primary);
 }
 
-.sign-trial {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
 .button {
   padding: 0.5rem 1.4rem;
   border-radius: 8px;
@@ -61,20 +56,12 @@
   color: white;
 }
 .sign-in-btn {
-  border: 0.5px solid black;
-  color: black;
-  background: transparent;
-}
-.trial-btn {
   border: none;
   color: white;
-  background: linear-gradient(140deg, var(--primary), var(--secondary));
+  background: var(--clr-bg);
 }
+
 .sign-in-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-.trial-btn:hover {
   filter: brightness(1.05);
 }
 .user-img {
@@ -95,32 +82,133 @@
   margin: 10px 5px;
   width: 100%;
 }
-.user-info p {
-  font-size: 12px;
-}
 .user-info {
-  padding: 10px;
   position: absolute;
-  top: 40px;
-  right: -40px;
+  top: 50px;
+  right: -50px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  z-index: 101;
-  background-color: var(--primary);
-  color: white;
-  border-radius: 5px;
-  min-width: 180px;
-  border: 1px solid black;
-  box-shadow: 0 8px 10px rgba(0, 0, 0, 0.8);
+  align-items: stretch;
+  background: var(--bg);
+  color: #222;
+  border-radius: 12px;
+  min-width: 220px;
+  box-shadow: 0 8px 20px rgba(0.4, 0.5, 0.5, 0.35);
+  padding: 20px;
+  z-index: 999;
+  border: 1px solid silver;
+  animation: fadeIn 0.4s ease;
 }
-.user-img button {
-  border: 1px solid white;
+
+.user-info p {
+  font-size: 0.8rem;
+  color: #555;
 }
+
+.user-info button,
 .user-info a {
-  text-decoration: none;
+  background: var(--clr-bg);
   color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin-top: 6px;
+  font-size: 0.85rem;
+  text-align: center;
+  cursor: pointer;
+  text-decoration: none;
+  transition: 0.2s;
 }
+
+.user-info button:hover,
+.user-info a:hover {
+  filter: brightness(1.05);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-user-card {
+  margin-top: 25px;
+  background: var(--bg);
+  color: black;
+  border-radius: 15px;
+  padding: 18px 15px;
+  box-shadow: 0 8px 20px rgba(0.4, 0.5, 0.5, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border: 1px solid silver;
+  gap: 12px;
+  max-width: 400px;
+}
+
+.mobile-user-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+.mobile-user-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.mobile-user-header p {
+  margin: 0;
+  font-size: 0.85rem;
+  opacity: 0.9;
+}
+
+.user-role {
+  background: var(--clr-bg);
+  color: white;
+  border-radius: 6px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.mobile-user-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.mobile-user-actions .button {
+  background: var(--clr-bg);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 6px 0;
+  border-radius: 8px;
+  border: none;
+  text-align: center;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  margin: 2px 20px;
+}
+
+.mobile-user-actions .button:hover {
+  background: #f2f2f2;
+  transform: scale(1.02);
+}
+
 .menu-toggle {
   background: var(--primary);
   border: none;
@@ -241,5 +329,10 @@
   }
   .menu-toggle {
     display: block;
+  }
+}
+@media (min-width: 769px) {
+  .mobile-menu {
+    display: none !important;
   }
 }

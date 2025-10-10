@@ -1,5 +1,5 @@
 .popular {
-  background:linear-gradient(140deg,var(--primary),var(--secondary));
+  background: linear-gradient(140deg, var(--primary), var(--secondary));
   padding: 30px 110px;
 }
 .popular-head {
@@ -7,7 +7,7 @@
   color: white;
   max-width: 60%;
   margin: 0 auto;
-  padding-bottom: 10px;
+  padding-bottom: 20px;
 }
 .popular-cards {
   margin-top: 20px;
@@ -29,15 +29,27 @@
   margin-top: 0;
 }
 /* popular */
+@media (max-width: 1024px) {
+  .popular {
+    padding: 30px 10px;
+  }
+  .popular-head {
+    max-width: 80%;
+  }
+  .popular-cards {
+    gap: 15px;
+    justify-content: center;
+  }
+}
 @media (max-width: 768px) {
-    .popular{
-        padding:30px 10px;
-    }
-    .popular-head{
-        max-width: 100%;
-    }
-    .popular-cards{
-        gap: 15px;
-          justify-content: center;
-    }
+  .popular {
+    padding: 30px 10px;
+  }
+  .popular-head {
+    max-width: 100%;
+  }
+  .popular-cards {
+    gap: 15px;
+    justify-content: center;
+  }
 }

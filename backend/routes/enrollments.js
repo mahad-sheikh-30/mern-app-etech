@@ -94,7 +94,6 @@ router.delete("/:id", auth, admin, async (req, res) => {
       newRole = updatedUser;
     }
     return res.json({
-      message: "Enrollment deleted successfully",
       newRole: newRole?.role || null,
     });
   } catch (err) {

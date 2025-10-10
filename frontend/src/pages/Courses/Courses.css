@@ -1,6 +1,6 @@
 .courses-page {
   background: var(--bg);
-  padding: 40px 110px;
+  padding: 20px 110px;
 }
 .head {
   display: flex;
@@ -57,14 +57,6 @@
   margin: 4px 0;
   border-radius: 18px;
 }
-.filter-opt p {
-  font-size: 13px;
-  padding: 8px 5px;
-  cursor: pointer;
-}
-.filter-opt p:hover {
-  background-color: purple;
-}
 .filter-opt {
   padding: 10px;
   border: 1px solid black;
@@ -75,6 +67,25 @@
   position: absolute;
   top: 50px;
   right: 15px;
+}
+
+.filter-opt p {
+  font-size: 13px;
+  padding: 8px 5px;
+  cursor: pointer;
+}
+.filter-opt hr {
+  margin: 0;
+}
+.filter-opt p:hover {
+  background-color: rgba(245, 245, 245, 0.8);
+  color: var(--primary);
+}
+
+.filter-opt p.active {
+  background-color: purple;
+  color: white;
+  border-radius: 4px;
 }
 
 .head #title {

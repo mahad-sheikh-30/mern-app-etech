@@ -12,7 +12,7 @@ export const getTeacherById = async (id: string) => {
 };
 
 
-export const addTeacher = async (formData: FormData) => {
+export const createTeacher = async (formData: FormData) => {
   const res = await API.post("/teachers", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });

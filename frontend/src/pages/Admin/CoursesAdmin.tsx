@@ -10,7 +10,6 @@ import {
   deleteCourse,
 } from "../../api/courseApi";
 import type { Course } from "../../components/CourseCard/CourseCard";
-import type { Teacher } from "../../components/TeacherCard/TeacherCard";
 
 const CoursesAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -28,8 +27,9 @@ const CoursesAdmin: React.FC = () => {
 
   // const [courses, setCourses] = useState<any[]>([]);
   // const [teachers, setTeachers] = useState<any[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
   // const [loading, setLoading] = useState(true);
+
+  const [isEditing, setIsEditing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 

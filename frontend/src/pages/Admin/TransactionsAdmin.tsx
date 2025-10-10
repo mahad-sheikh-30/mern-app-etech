@@ -1,27 +1,33 @@
 import React, { useEffect, useState } from "react";
 import TransactionsTable from "../../components/TransactionsTable/TransactionsTable";
 import { getAllTransactions } from "../../api/transactionApi";
+import { useQuery } from "@tanstack/react-query";
 
 const AdminTransactions: React.FC = () => {
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // const [transactions, setTransactions] = useState<any[]>([]);
+  // const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchAllTransactions();
-  }, []);
+  const { data: transactions = [], isLoading } = useQuery({
+    queryKey: ["transactions"],
+    queryFn: getAllTransactions,
+  });
 
-  const fetchAllTransactions = async () => {
-    try {
-      const data = await getAllTransactions();
-      setTransactions(data);
-    } catch (err) {
-      console.error("Error fetching all transactions:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // useEffect(() => {
+  //   fetchAllTransactions();
+  // }, []);
 
-  if (loading) return <p>Loading all transactions...</p>;
+  // const fetchAllTransactions = async () => {
+  //   try {
+  //     const data = await getAllTransactions();
+  //     setTransactions(data);
+  //   } catch (err) {
+  //     console.error("Error fetching all transactions:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  if (isLoading) return <p>Loading all transactions...</p>;
 
   return (
     <div>

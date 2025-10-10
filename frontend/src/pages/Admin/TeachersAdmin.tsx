@@ -1,9 +1,9 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import "./AdminForms.css";
 import {
   getAllTeachers,
-  addTeacher,
+  createTeacher,
   updateTeacher,
   deleteTeacher,
 } from "../../api/teacherApi";
@@ -17,25 +17,61 @@ const TeachersAdmin: React.FC = () => {
     image: null as File | null,
   });
 
-  useEffect(() => {
-    loadTeachers();
-  }, []);
+  // useEffect(() => {
+  //   loadTeachers();
+  // }, []);
 
-  const [teachers, setTeachers] = useState<any[]>([]);
+  // const loadTeachers = async () => {
+  //   try {
+  //     const data = await getAllTeachers();
+  //     setTeachers(data);
+  //     setLoading(false);
+  //   } catch (err) {
+  //     console.error("Error fetching teachers:", err);
+  //   }
+  // };
+  // const [teachers, setTeachers] = useState<any[]>([]);
+  // const [loading, setLoading] = useState(true);
+
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const loadTeachers = async () => {
-    try {
-      const data = await getAllTeachers();
-      setTeachers(data);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching teachers:", err);
-    }
-  };
+  const queryClient = useQueryClient();
+
+  const { data: teachers = [], isLoading: teachersLoading } = useQuery({
+    queryKey: ["teachers"],
+    queryFn: getAllTeachers,
+  });
+  const loading = teachersLoading;
+
+  const createMutation = useMutation({
+    mutationFn: (form: FormData) => createTeacher(form),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teachers"] });
+      alert("Teacher added!");
+    },
+    onError: () => alert("Failed to add teacher!"),
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, form }: { id: string; form: FormData }) =>
+      updateTeacher(id, form),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teachers"] });
+      alert("Teacher updated!");
+    },
+    onError: () => alert("Failed to update teacher!"),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteTeacher(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["teachers"] });
+      alert("Teacher deleted!");
+    },
+    onError: () => alert("Failed to delete teacher"),
+  });
 
   const handleEdit = (teacher: any) => {
     setFormData(teacher);
@@ -48,8 +84,7 @@ const TeachersAdmin: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this teacher?"))
       return;
     try {
-      await deleteTeacher(id);
-      loadTeachers();
+      await deleteMutation.mutateAsync(id);
     } catch (err) {
       console.error("Error deleting teacher:", err);
     }
@@ -73,11 +108,9 @@ const TeachersAdmin: React.FC = () => {
       }
 
       if (isEditing) {
-        await updateTeacher(formData._id, fileData);
-        alert("Teacher updated successfully!");
+        await updateMutation.mutateAsync({ id: formData._id, form: fileData });
       } else {
-        await addTeacher(fileData);
-        alert("Teacher added successfully!");
+        await createMutation.mutateAsync(fileData);
       }
 
       setFormData({
@@ -87,9 +120,8 @@ const TeachersAdmin: React.FC = () => {
         role: "",
         rating: 0,
       });
-      setIsEditing(false);
       setImagePreview(null);
-      loadTeachers();
+      setIsEditing(false);
     } catch (err) {
       console.error("Error adding teacher:", err);
       alert("Failed to add teacher!");
@@ -178,7 +210,7 @@ const TeachersAdmin: React.FC = () => {
           <h2>Loading teachers...</h2>
         ) : (
           <div className="comp-list">
-            {teachers.map((teacher) => (
+            {teachers.map((teacher: any) => (
               <div key={teacher._id} className="comp-card">
                 <div className="info">
                   <h3>{teacher.name}</h3>

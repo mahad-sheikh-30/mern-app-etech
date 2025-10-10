@@ -1,27 +1,32 @@
 import React, { useEffect, useMemo, useState } from "react";
 import CourseCard from "../../components/CourseCard/CourseCard";
 import type { Course } from "../../components/CourseCard/CourseCard";
-import { useQuery } from "@tanstack/react-query";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
 import "./Courses.css";
 import searchIcon from "../../assets/search.png";
 import { useLocation } from "react-router-dom";
 import { getAllCourses } from "../../api/courseApi";
 import { getEnrolledCourses } from "../../api/enrollmentApi";
+import { useUser } from "../../context/UserContext";
+
+const ITEMS_PER_PAGE = 6;
 
 const Courses: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialSearch = queryParams.get("search") || "";
   const [searchTerm, setSearchTerm] = useState(initialSearch);
+  const [page, setPage] = useState(1);
+  const [activeOption, setActiveOption] = useState("all");
 
   // const [courses, setCourses] = useState<Course[]>([]);
   // const [loading, setLoading] = useState(true);
   // const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   // const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
 
+  const { user } = useUser();
   const queryClient = useQueryClient();
 
   const { data: courses = [], isLoading: coursesLoading } = useQuery({
@@ -32,6 +37,7 @@ const Courses: React.FC = () => {
   const { data: enrolledCourses = [], isLoading: enrolledLoading } = useQuery({
     queryKey: ["enrolled"],
     queryFn: getEnrolledCourses,
+    enabled: !!user?.token,
   });
 
   // useEffect(() => {
@@ -47,15 +53,6 @@ const Courses: React.FC = () => {
   //     setCourses(allCourses);
   //     setFilteredCourses(allCourses);
   //     setEnrolledCourses(enrolled);
-
-  //     if (initialSearch) {
-  //       const lower = initialSearch.toLowerCase();
-  //       setSearchTerm(initialSearch);
-  //       setFilteredCourses(
-  //         allCourses.filter((c: Course) =>
-  //           c.title.toLowerCase().includes(lower)
-  //         )
-  //       );
   //     }
   //   } catch (err) {
   //     console.error("Error fetching courses:", err);
@@ -68,21 +65,51 @@ const Courses: React.FC = () => {
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value.toLowerCase());
-
-    // if (!value) {
-    //   setFilteredCourses(courses);
-    // } else {
-    //   setFilteredCourses(
-    //     courses.filter((c) => c.title.toLowerCase().includes(value))
-    //   );
-    // }
+    setPage(1);
   };
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
+
   const filteredCourses = useMemo(() => {
     const search = (searchTerm || initialSearch).toLowerCase();
-    return courses.filter((c: Course) =>
-      c.title.toLowerCase().includes(search)
-    );
-  }, [courses, searchTerm, initialSearch]);
+    let list = courses;
+    if (search.trim() !== "") {
+      list = courses.filter((c: Course) =>
+        c.title.toLowerCase().includes(search)
+      );
+    }
+
+    switch (activeOption) {
+      case "priceLow":
+        list = [...list].sort((a: Course, b: Course) => a.price - b.price);
+        break;
+      case "priceHigh":
+        list = [...list].sort((a: Course, b: Course) => b.price - a.price);
+        break;
+      case "students":
+        list = [...list].sort(
+          (a: Course, b: Course) => b.studentsCount - a.studentsCount
+        );
+        break;
+      case "lessons":
+        list = [...list].sort(
+          (a: Course, b: Course) => b.coursesCount - a.coursesCount
+        );
+        break;
+      case "enrolled":
+        list = list.filter((c: Course) => enrolledCourses.includes(c._id));
+        break;
+      case "not-enrolled":
+        list = list.filter((c: Course) => !enrolledCourses.includes(c._id));
+        break;
+      default:
+        break;
+    }
+
+    return list;
+  }, [courses, searchTerm, initialSearch, activeOption, enrolledCourses]);
 
   const handleEnrollSuccess = (courseId: string) => {
     queryClient.setQueryData<string[]>(["enrolled"], (old = []) => [
@@ -92,6 +119,11 @@ const Courses: React.FC = () => {
     queryClient.invalidateQueries({ queryKey: ["enrolled"] });
   };
 
+  const start = (page - 1) * ITEMS_PER_PAGE;
+  const end = start + ITEMS_PER_PAGE;
+  const paginatedCourses = filteredCourses.slice(start, end);
+
+  const totalPages = Math.ceil(filteredCourses.length / ITEMS_PER_PAGE);
   if (loading) return <h2>Loading courses...</h2>;
 
   return (
@@ -122,10 +154,10 @@ const Courses: React.FC = () => {
           <div className="filter-opt">
             <strong>
               <p
+                className={activeOption === "priceLow" ? "active" : ""}
                 onClick={() => {
-                  filteredCourses.sort(
-                    (a: Course, b: Course) => a.price - b.price
-                  );
+                  setActiveOption("priceLow");
+                  setIsOpen(false);
                 }}
               >
                 Price: Low to High
@@ -134,10 +166,10 @@ const Courses: React.FC = () => {
             <hr />
             <strong>
               <p
+                className={activeOption === "priceHigh" ? "active" : ""}
                 onClick={() => {
-                  filteredCourses.sort(
-                    (a: Course, b: Course) => b.price - a.price
-                  );
+                  setActiveOption("priceHigh");
+                  setIsOpen(false);
                 }}
               >
                 Price: High to Low
@@ -146,10 +178,10 @@ const Courses: React.FC = () => {
             <hr />
             <strong>
               <p
+                className={activeOption === "students" ? "active" : ""}
                 onClick={() => {
-                  filteredCourses.sort(
-                    (a: Course, b: Course) => a.studentsCount - b.studentsCount
-                  );
+                  setActiveOption("students");
+                  setIsOpen(false);
                 }}
               >
                 Sort by Students Count
@@ -158,13 +190,49 @@ const Courses: React.FC = () => {
             <hr />
             <strong>
               <p
+                className={activeOption === "lessons" ? "active" : ""}
                 onClick={() => {
-                  filteredCourses.sort(
-                    (a: Course, b: Course) => a.coursesCount - b.coursesCount
-                  );
+                  setActiveOption("lessons");
+                  setIsOpen(false);
                 }}
               >
                 Sort by Lessons Count
+              </p>
+            </strong>
+            <hr />
+            <strong>
+              <p
+                className={activeOption === "enrolled" ? "active" : ""}
+                onClick={() => {
+                  setActiveOption("enrolled");
+                  setIsOpen(false);
+                }}
+              >
+                Show Enrolled Courses
+              </p>
+            </strong>
+            <hr />
+            <strong>
+              <p
+                className={activeOption === "not-enrolled" ? "active" : ""}
+                onClick={() => {
+                  setActiveOption("not-enrolled");
+                  setIsOpen(false);
+                }}
+              >
+                Show Not Enrolled Courses
+              </p>
+            </strong>
+            <hr />
+            <strong>
+              <p
+                className={activeOption === "all" ? "active" : ""}
+                onClick={() => {
+                  setActiveOption("all");
+                  setIsOpen(false);
+                }}
+              >
+                Show All Courses
               </p>
             </strong>
           </div>
@@ -172,8 +240,8 @@ const Courses: React.FC = () => {
       </div>
 
       <div className="popular-cards">
-        {filteredCourses.length > 0 ? (
-          filteredCourses.map((course: Course) => (
+        {paginatedCourses.length > 0 ? (
+          paginatedCourses.map((course: Course) => (
             <CourseCard
               key={course._id}
               course={course}
@@ -185,6 +253,27 @@ const Courses: React.FC = () => {
           <h3>No courses found</h3>
         )}
       </div>
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button
+            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+            disabled={page === 1}
+          >
+            ← Prev
+          </button>
+
+          <span>
+            Page {page} of {totalPages}
+          </span>
+
+          <button
+            onClick={() => setPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={page === totalPages}
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </section>
   );
 };

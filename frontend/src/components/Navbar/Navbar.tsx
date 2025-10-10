@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import crossImg from "../../assets/closee.png";
 import userImg from "../../assets/user-circle.png";
 import { useUser } from "../../context/UserContext";
+import userIcon from "../../assets/user.png";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -11,6 +12,17 @@ const Navbar: React.FC = () => {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".user-img") && !target.closest(".user-info")) {
+        setIsUserOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
 
   const handleSignOut = () => {
     logout();
@@ -47,7 +59,6 @@ const Navbar: React.FC = () => {
         </div>
 
         <div className="sign-trial">
-          <button className="trial-btn button">Free Trial</button>
           {!user ? (
             <Link to="/signin">
               <button className="sign-in-btn button">Sign In</button>
@@ -58,7 +69,7 @@ const Navbar: React.FC = () => {
                 className="user-img"
                 onClick={() => setIsUserOpen(!isUserOpen)}
               >
-                <img src={userImg} alt="" />
+                <img src={userIcon} alt="" />
 
                 {isUserOpen && (
                   <div className="user-info">
@@ -155,36 +166,42 @@ const Navbar: React.FC = () => {
             </Link>
           </li>
         </ul>
+        {user ? (
+          <div className="mobile-user-card">
+            <div className="mobile-user-header">
+              <h3>{name?.toUpperCase()}</h3>
+              <p>{email}</p>
+              <span className="user-role">{role?.toUpperCase()}</span>
+            </div>
+
+            <div className="mobile-user-actions">
+              {role === "admin" && (
+                <button
+                  onClick={() => {
+                    navigate("/admin");
+                    setIsMenuOpen(false);
+                  }}
+                  className="button admin-btn"
+                >
+                  Admin Panel
+                </button>
+              )}
+              {role === "student" && (
+                <Link
+                  to="/transactions"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="button"
+                >
+                  My Transactions
+                </Link>
+              )}
+            </div>
+          </div>
+        ) : (
+          <></>
+        )}
 
         <div className="mobile-buttons">
-          <h4>{name?.toUpperCase()}</h4>
-          <hr />
-          <p>{email}</p>
-          <hr />
-          <h4>{role?.toUpperCase()}</h4>
-          <hr />
-
-          {role === "admin" && (
-            <>
-              <button
-                onClick={() => {
-                  navigate("/admin");
-                  setIsMenuOpen(false);
-                }}
-                className="button admin-btn"
-              >
-                Admin Panel
-              </button>
-            </>
-          )}
-          {role === "student" && (
-            <>
-              <Link to="/transactions" onClick={() => setIsMenuOpen(false)}>
-                My Transactions
-              </Link>
-              <hr />
-            </>
-          )}
           {!user ? (
             <Link to="/signin" onClick={() => setIsMenuOpen(false)}>
               <button className="sign-in-btn button">Sign In</button>
@@ -194,7 +211,6 @@ const Navbar: React.FC = () => {
               Sign Out
             </button>
           )}
-          <button className="trial-btn button">Free Trial</button>
 
           <Link to="/" onClick={() => setIsMenuOpen(false)}>
             <button className="home-btn button">Go Back Home</button>

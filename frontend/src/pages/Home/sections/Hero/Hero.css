@@ -20,7 +20,6 @@
   margin: 16px 0px;
 }
 
-
 .enroll-btn:hover {
   filter: brightness(1.05);
 }
@@ -47,7 +46,7 @@
   align-items: center;
 }
 .circle {
-  background: linear-gradient(160deg, var(--primary), var(--secondary));
+  background: var(--clr-bg);
   width: 350px;
   height: 350px;
   border-radius: 50%;
@@ -91,7 +90,7 @@
   gap: 3px;
 }
 .box2 {
-  left: 65%;
+  left: 60%;
   bottom: 40%;
 }
 .box2-icons {
@@ -114,26 +113,52 @@
   align-items: center;
   gap: 3px;
 }
+
 .hero-bottom {
-  min-height: 80px;
-  background: linear-gradient(170deg, var(--primary), var(--secondary));
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  flex-wrap: nowrap;
-  padding: 0px 75px;
+  background: var(--clr-bg);
   color: white;
   font-size: 1.4rem;
+  overflow: hidden;
+  padding: 15px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
+.scroll-container {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.scroll-content {
+  display: flex;
+  align-items: center;
+  gap: 110px;
+  white-space: nowrap;
+  animation: scrollLeft 30s linear infinite;
+}
+
+@keyframes scrollLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .hero-bottom img {
   width: 40px;
   height: 35px;
 }
+
 .flexx {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
 }
+
 .user {
   padding: 1px 4px;
   margin-right: 2px;
@@ -141,71 +166,78 @@
   background: white;
   color: var(--primary);
 }
+
 .duolingo {
   font-size: 1.7rem;
   font-weight: 600;
 }
 
 @media (max-width: 768px) {
-    .hero{
+  .hero {
     flex-direction: column;
     text-align: center;
-}
-.hero-left{
+  }
+  .hero-left {
     width: 100%;
-    padding: 10px 40px ;
-}
-.hero-title{
+    padding: 10px 40px;
+  }
+  .hero-title {
     font-size: 2.5rem;
     font-weight: 800;
-}
-.hero-btns{
+  }
+  .hero-btns {
     justify-content: center;
-}
-.hero-p{
+  }
+  .hero-p {
     margin: 10px 0px;
-}
-.hero-right { position: relative; width: 100%; overflow: hidden; 
-height: 460px;} 
-.circle {
-  width: 300px;
-  height: 300px;           
-}
-.girl1-img {
-  width: 700px;
+  }
+  .hero-right {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    height: 460px;
+  }
+  .circle {
+    width: 300px;
+    height: 300px;
+  }
+  .girl1-img {
+    width: 700px;
+  }
+  .scroll-content {
+    gap: 50px;
+  }
+  .duolingo {
+    font-size: 1.3rem;
+  }
+
+  .hero-bottom img {
+    width: 30px;
+    height: 25px;
+  }
+
+  .hero-bottom {
+    font-size: 1rem;
+  }
 }
 
-}
-@media (max-width: 900px) {
-    .hero-bottom{
-        justify-content: space-between;
-        padding:0px 8px ;
-        font-size: 0.8rem;
-    }
-    .hero-bottom img{
-        width: 22px;
-        height: 16px;
-    }
-    .duolingo{
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-}
-@media (max-width: 768px) {
-    .hero-bottom{
-        justify-content: space-between;
-        padding:0px 5px ;
-        font-size: 0.6rem;
-        min-height: 55px;
-    }
-    .hero-bottom img{
-        width: 17px;
-        height: 12px;
-    }
-    .duolingo{
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-}
+@media (max-width: 480px) {
+  .scroll-content {
+    gap: 15px;
+  }
 
+  .hero-bottom img {
+    width: 24px;
+    height: 22px;
+  }
 
+  .item {
+    font-size: 0.9rem;
+  }
+  .hero-bottom {
+    font-size: 0.8rem;
+  }
+  .duolingo {
+    font-size: 1rem;
+  }
+}
