@@ -4,7 +4,6 @@ const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
 });
 
-
 API.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -20,12 +19,15 @@ API.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
-      const { status } = error.response;
+      const { status, config } = error.response;
 
-      if (status === 401) {
+    
+      const hasAuthHeader = !!config?.headers?.Authorization;
+
+      if (status === 401 && hasAuthHeader) {
         alert("Session expired. Please log in again.");
         localStorage.removeItem("token");
-        window.location.href = "/signin"; 
+        window.location.href = "/signin";
       }
 
       else if (status === 403) {
@@ -36,4 +38,5 @@ API.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 export default API;

@@ -12,6 +12,8 @@ const courseRoutes = require("./routes/courses");
 const enrollmentRoutes = require("./routes/enrollments");
 const paymentRoutes = require("./routes/payment");
 const transactionRoutes = require("./routes/transactions");
+const googleAuth = require("./routes/googleAuth");
+
 const { handleWebhook } = require("./routes/payment");
 
 const app = express();
@@ -26,6 +28,7 @@ app.post(
 app.use(cors());
 app.use(express.json());
 
+app.use("/api/google-auth", googleAuth);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/contact", contactRoutes);

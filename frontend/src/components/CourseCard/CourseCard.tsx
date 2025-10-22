@@ -5,6 +5,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createEnrollment } from "../../api/enrollmentApi";
 import { useUser } from "../../context/UserContext";
 import { useNavigate } from "react-router-dom";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import toast from "react-hot-toast";
 
 export interface Course {
   _id: string;
@@ -31,74 +33,60 @@ const CourseCard: React.FC<{
 
   const enrollMutation = useMutation({
     mutationFn: (courseId: string) => createEnrollment({ courseId }),
-    onSuccess: (_, courseId) => {
+    onSuccess: async (_, courseId) => {
       queryClient.setQueryData<string[]>(["enrolled"], (old = []) => [
         ...old,
         courseId,
       ]);
-      alert("You have been enrolled in this free course!");
+      await queryClient.invalidateQueries({ queryKey: ["enrolled"] });
       updateRole("student");
       onEnrollSuccess?.(courseId);
+      toast.success("Successfully Enrolled!");
     },
+
     onError: (err: any) => {
-      alert(err?.response?.data?.error || "Enrollment failed. Try again.");
+      toast.error(
+        err?.response?.data?.error || "Enrollment failed. Try again."
+      );
     },
   });
 
   const [modalOpen, setModalOpen] = useState(false);
+  // console.log("Enrolled Courses in CourseCard:", enrolledCourses);
   const isEnroll = enrolledCourses.includes(course._id);
-  const [loading, setLoading] = useState(false);
+  console.log("isEnroll for course", course._id, ":", isEnroll);
 
   const handleEnroll = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (loading || isEnroll) return;
+    if (isEnroll || enrollMutation.isPending) return;
     if (enrolledCourses.length >= 6) {
-      alert("You have reached the maximum number of enrolled courses (6).");
+      toast.error("Maximum 6 courses can be enrolled.");
       return;
     }
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        alert("Please sign in first!");
-        navigate("/signin");
-        return;
-      }
-      const role = localStorage.getItem("role");
-      if (role === "admin") {
-        alert("Admin cannot enroll in a course!");
-        return;
-      }
-      setLoading(true);
 
-      if (course.price === 0) {
-        enrollMutation.mutate(course._id, {
-          onSettled: () => setLoading(false),
-        });
-        return;
-      }
-
-      navigate("/checkout", { state: { course } });
-
-      //stripe checkout page
-      // const res = await axios.post(
-      //   "http://localhost:8080/api/payment/create-checkout-session",
-      //   { courseId: course._id },
-      //   { headers: { Authorization: `Bearer ${token}` } }
-      // );
-
-      // window.location.href = res.data.url;
-    } catch (error: any) {
-      console.error("Payment session failed:", error);
-      alert(
-        error.response?.data?.error ||
-          "Payment session could not be created. Try again."
-      );
-      setLoading(false);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Please sign in first!");
+      navigate("/signin");
+      return;
     }
+
+    const role = localStorage.getItem("role");
+    if (role === "admin") {
+      toast.error("Admin cannot enroll in a course!");
+      return;
+    }
+
+    if (Number(course.price) === 0) {
+      enrollMutation.mutate(course._id);
+      return;
+    }
+
+    navigate("/checkout", { state: { course } });
   };
 
   const handleCardClick = () => {
-    if (loading) return;
+    if (enrollMutation.isPending) return;
     setModalOpen(true);
   };
 
@@ -133,14 +121,14 @@ const CourseCard: React.FC<{
             <button
               className="enroll-btn"
               onClick={handleEnroll}
-              disabled={loading}
+              disabled={enrollMutation.isPending}
             >
-              {loading ? "Redirecting..." : "Enroll"}
+              {enrollMutation.isPending ? <LoadingSpinner /> : "Enroll"}
             </button>
           )}
         </div>
       </div>
-      {modalOpen && (
+      {modalOpen && !checkout && (
         <div className="modal-overlay" onClick={() => setModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <img src={course.image} className="modal-img-fullscreen" />
@@ -163,8 +151,12 @@ const CourseCard: React.FC<{
                   Enrolled
                 </button>
               ) : (
-                <button className="enroll-btn" onClick={handleEnroll}>
-                  Enroll
+                <button
+                  className="enroll-btn"
+                  onClick={handleEnroll}
+                  disabled={enrollMutation.isPending}
+                >
+                  {enrollMutation.isPending ? <LoadingSpinner /> : "Enroll"}
                 </button>
               )}
             </div>

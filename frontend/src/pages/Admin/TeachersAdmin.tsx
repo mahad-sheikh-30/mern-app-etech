@@ -7,6 +7,15 @@ import {
   updateTeacher,
   deleteTeacher,
 } from "../../api/teacherApi";
+import toast from "react-hot-toast";
+import AppDataTable from "../../components/AppDataTable/AppDataTable";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+
+const teacherColumns = [
+  { name: "Name", selector: (row: any) => row.name, sortable: true },
+  { name: "Role", selector: (row: any) => row.role, sortable: true },
+  { name: "Rating", selector: (row: any) => row.rating, sortable: true },
+];
 
 const TeachersAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +43,7 @@ const TeachersAdmin: React.FC = () => {
   // const [loading, setLoading] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setisSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
@@ -44,14 +53,15 @@ const TeachersAdmin: React.FC = () => {
     queryFn: getAllTeachers,
   });
   const loading = teachersLoading;
+  console.log("Teachers", teachers);
 
   const createMutation = useMutation({
     mutationFn: (form: FormData) => createTeacher(form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teachers"] });
-      alert("Teacher added!");
+      toast.success("Teacher added!");
     },
-    onError: () => alert("Failed to add teacher!"),
+    onError: () => toast.error("Failed to add teacher!"),
   });
 
   const updateMutation = useMutation({
@@ -59,18 +69,18 @@ const TeachersAdmin: React.FC = () => {
       updateTeacher(id, form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teachers"] });
-      alert("Teacher updated!");
+      toast.success("Teacher updated!");
     },
-    onError: () => alert("Failed to update teacher!"),
+    onError: () => toast.error("Failed to update teacher!"),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteTeacher(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["teachers"] });
-      alert("Teacher deleted!");
+      toast.success("Teacher deleted!");
     },
-    onError: () => alert("Failed to delete teacher"),
+    onError: () => toast.error("Delete failed"),
   });
 
   const handleEdit = (teacher: any) => {
@@ -96,8 +106,8 @@ const TeachersAdmin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
+    if (isSubmitting) return;
+    setisSubmitting(true);
     try {
       const fileData = new FormData();
       fileData.append("name", formData.name);
@@ -124,9 +134,8 @@ const TeachersAdmin: React.FC = () => {
       setIsEditing(false);
     } catch (err) {
       console.error("Error adding teacher:", err);
-      alert("Failed to add teacher!");
     } finally {
-      setSubmitting(false);
+      setisSubmitting(false);
     }
   };
 
@@ -199,41 +208,29 @@ const TeachersAdmin: React.FC = () => {
               </div>
             )}
           </div>
-          <button type="submit">{isEditing ? "Update " : "Add "}Teacher</button>
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <LoadingSpinner />
+            ) : isEditing ? (
+              "Update Teacher"
+            ) : (
+              "Add Teacher"
+            )}
+          </button>
         </form>
       </div>
 
-      <div className="list">
-        <h2>All Teachers</h2>
-        <hr />
-        {loading ? (
-          <h2>Loading teachers...</h2>
-        ) : (
-          <div className="comp-list">
-            {teachers.map((teacher: any) => (
-              <div key={teacher._id} className="comp-card">
-                <div className="info">
-                  <h3>{teacher.name}</h3>
-                </div>
-                <div className="actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => handleEdit(teacher)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(teacher._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {deleteMutation.isPending && <LoadingSpinner />}
+
+      <AppDataTable
+        title="All Teachers"
+        data={teachers}
+        columns={teacherColumns}
+        isLoading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        actions
+      />
     </>
   );
 };

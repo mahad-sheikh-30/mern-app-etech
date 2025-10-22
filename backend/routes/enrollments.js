@@ -61,7 +61,8 @@ router.get("/my", auth, async (req, res) => {
     const userId = req.user._id;
     const enrollments = await Enrollment.find({ userId }).select("courseId");
     const courseIds = enrollments.map((e) => e.courseId.toString());
-    res.json(courseIds);
+
+    return res.json(courseIds);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

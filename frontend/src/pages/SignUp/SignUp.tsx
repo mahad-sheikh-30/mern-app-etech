@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../SignIn/Auth.css";
 import API from "../../api/axiosInstance";
+import toast from "react-hot-toast";
 
 const SignUp: React.FC = () => {
   const [data, setData] = useState({
@@ -24,6 +25,7 @@ const SignUp: React.FC = () => {
     try {
       const { data: res } = await API.post("/users", data);
       navigate("/signin");
+      toast.success("Registration successful! Please sign in.");
       console.log(res.message);
     } catch (error: any) {
       if (
@@ -35,7 +37,6 @@ const SignUp: React.FC = () => {
         return;
       }
     }
-    console.log("Sign Up Data:", data);
 
     setData({ name: "", phone: "", email: "", password: "" });
   };

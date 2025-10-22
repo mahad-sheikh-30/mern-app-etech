@@ -5,13 +5,22 @@ import "./AdminForms.css";
 import { useUser } from "../../context/UserContext";
 import { deleteEnrollment, getAllEnrollments } from "../../api/enrollmentApi";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import AppDataTable from "../../components/AppDataTable/AppDataTable";
+import FullPageLoader from "../../components/FullPageLoader/FullPageLoader";
+
+const enrollmentColumns = [
+  { name: "Student", selector: (row: any) => row.userId?.name, sortable: true },
+  { name: "Course", selector: (row: any) => row.courseId?.title },
+  { name: "Teacher", selector: (row: any) => row.courseId?.teacherId?.name },
+];
 
 const EnrollmentsAdmin: React.FC = () => {
   // const [enrollments, setEnrollments] = useState<any[]>([]);
   const { updateRole, user } = useUser();
 
   if (!user?.token) {
-    alert("Please sign in first!");
+    toast.error("Please sign in first!");
     return;
   }
   const queryClient = useQueryClient();
@@ -21,13 +30,14 @@ const EnrollmentsAdmin: React.FC = () => {
     queryFn: getAllEnrollments,
   });
 
+  console.log("Enrollments", enrollments);
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteEnrollment(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["enrollments"] });
-      alert("Enrollment added!");
+      toast.success("Enrollment deleted!");
     },
-    onError: () => alert("Failed to delete enrollment!"),
+    onError: () => toast.error("Failed to delete enrollment"),
   });
   // useEffect(() => {
   //   fetchEnrollments();
@@ -54,52 +64,26 @@ const EnrollmentsAdmin: React.FC = () => {
       // fetchEnrollments();
     } catch (error: any) {
       if (error.response) {
-        alert(error.response.data.error || "Failed to delete enrollment");
+        toast.error(error.response.data.message);
       } else {
-        alert("Something went wrong");
+        toast.error("An error occurred while deleting the enrollment.");
       }
       console.error(error);
     }
   };
-  if (isLoading) return <h2>Loading Enrollments...</h2>;
+
   return (
-    <>
-      <h1 className="main-h">Manage Enrollments</h1>
-      <div className="list">
-        <h2>All Enrollments</h2>
-        <hr />
-        <div className="comp-list">
-          <div className="comp-list">
-            {enrollments.length === 0 ? (
-              <p>No enrollments found.</p>
-            ) : (
-              enrollments.map((enroll: any) => (
-                <div key={enroll._id} className="comp-card">
-                  <div className="info">
-                    <p>
-                      <strong>Student: </strong> {enroll.userId?.name}
-                    </p>
-                    <p>
-                      <strong>Course: </strong> {enroll.courseId?.title}
-                    </p>
-                    <p>
-                      <strong>Teacher: </strong>{" "}
-                      {enroll.courseId?.teacherId?.name}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(enroll._id)}
-                    className="delete-btn"
-                  >
-                    Delete
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
-    </>
+    <div className="enroll-admin">
+      {deleteMutation.isPending && <FullPageLoader />}
+      <AppDataTable
+        title="All Enrollments"
+        data={enrollments}
+        columns={enrollmentColumns}
+        isLoading={isLoading}
+        onDelete={handleDelete}
+        actions
+      />
+    </div>
   );
 };
 

@@ -1,6 +1,7 @@
 .courses-page {
   background: var(--bg);
   padding: 20px 110px;
+  position: relative;
 }
 .head {
   display: flex;

@@ -10,6 +10,17 @@ import {
   deleteCourse,
 } from "../../api/courseApi";
 import type { Course } from "../../components/CourseCard/CourseCard";
+import toast from "react-hot-toast";
+import AppDataTable from "../../components/AppDataTable/AppDataTable";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+
+const courseColumns = [
+  {
+    name: "Title",
+    selector: (row: any) => row.title,
+    sortable: true,
+  },
+];
 
 const CoursesAdmin: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -30,7 +41,7 @@ const CoursesAdmin: React.FC = () => {
   // const [loading, setLoading] = useState(true);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
+  const [isSubmitting, setisSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
@@ -50,25 +61,25 @@ const CoursesAdmin: React.FC = () => {
     mutationFn: (form: FormData) => createCourse(form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
-      alert("Course added!");
+      toast.success("Course added!");
     },
-    onError: () => alert("Failed to add course!"),
+    onError: () => toast.error("Failed to add course!"),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, form }: { id: string; form: FormData }) =>
-      updateCourse(id, form),
+    mutationFn: ({ _id, form }: { _id: string; form: FormData }) =>
+      updateCourse(_id, form),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["courses"] });
-      alert("Course updated!");
+      toast.success("Course updated!");
     },
-    onError: () => alert("Failed to update course!"),
+    onError: () => toast.error("Failed to update course!"),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => deleteCourse(id),
+    mutationFn: (_id: string) => deleteCourse(_id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["courses"] }),
-    onError: () => alert("Failed to delete course!"),
+    onError: () => toast.error("Delete failed"),
   });
 
   // useEffect(() => {
@@ -118,8 +129,8 @@ const CoursesAdmin: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
-    setSubmitting(true);
+    if (isSubmitting) return;
+    setisSubmitting(true);
 
     try {
       const fileData = new FormData();
@@ -137,7 +148,7 @@ const CoursesAdmin: React.FC = () => {
       }
 
       if (isEditing) {
-        await updateMutation.mutateAsync({ id: formData._id, form: fileData });
+        await updateMutation.mutateAsync({ _id: formData._id, form: fileData });
         // await updateCourse(formData._id, fileData);
         // alert("Course updated!");
       } else {
@@ -164,9 +175,9 @@ const CoursesAdmin: React.FC = () => {
       // await loadCourses();
     } catch (err) {
       console.error("Error saving course:", err);
-      alert("Failed!");
+      toast.error("Save failed");
     } finally {
-      setSubmitting(false);
+      setisSubmitting(false);
     }
   };
 
@@ -180,15 +191,14 @@ const CoursesAdmin: React.FC = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (_id: string) => {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
-      await deleteMutation.mutateAsync(id);
-      // await deleteCourse(id);
+      await deleteMutation.mutateAsync(_id);
+      // await deleteCourse(_id);
       // loadCourses();
     } catch (err) {
       console.error("Error deleting course:", err);
-      alert("Delete failed");
     }
   };
 
@@ -323,43 +333,28 @@ const CoursesAdmin: React.FC = () => {
             </label>
           </div>
 
-          <button type="submit">
-            {isEditing ? "Update Course" : "Add Course"}
+          <button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <LoadingSpinner />
+            ) : isEditing ? (
+              "Update Course"
+            ) : (
+              "Add Course"
+            )}
           </button>
         </form>
       </div>
 
-      <div className="list">
-        <h2>All Courses</h2>
-        <hr />
-        {loading ? (
-          <h2>Loading courses...</h2>
-        ) : (
-          <div className="comp-list">
-            {courses.map((course: Course) => (
-              <div key={course._id} className="comp-card">
-                <div className="info">
-                  <h3>{course.title}</h3>
-                </div>
-                <div className="actions">
-                  <button
-                    className="edit-btn"
-                    onClick={() => handleEdit(course)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="delete-btn"
-                    onClick={() => handleDelete(course._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {deleteMutation.isPending && <LoadingSpinner />}
+      <AppDataTable
+        title="All Courses"
+        data={courses}
+        columns={courseColumns}
+        isLoading={loading}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        actions
+      />
     </div>
   );
 };

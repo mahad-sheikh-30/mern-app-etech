@@ -69,7 +69,7 @@
   cursor: pointer;
   transition: 0.3s;
 }
-.enroll-btn:hover {
+.enroll-btn:hover:not(:disabled) {
   background: purple;
 }
 .enrolled-btn {

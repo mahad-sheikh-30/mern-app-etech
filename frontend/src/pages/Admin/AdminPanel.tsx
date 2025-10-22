@@ -4,10 +4,19 @@ import API from "../../api/axiosInstance";
 import "./AdminForms.css";
 import { useUser } from "../../context/UserContext";
 import { useQuery } from "@tanstack/react-query";
+import toast from "react-hot-toast";
+import AppDataTable from "../../components/AppDataTable/AppDataTable";
+
+const userColumns = [
+  { name: "Name", selector: (row: any) => row.name, sortable: true },
+  { name: "Email", selector: (row: any) => row.email },
+  { name: "Role", selector: (row: any) => row.role },
+];
+
 const AdminPanel: React.FC = () => {
   const { user } = useUser();
   if (!user?.token) {
-    alert("Please sign in first!");
+    toast.error("Please sign in first!");
     return;
   }
 
@@ -35,33 +44,14 @@ const AdminPanel: React.FC = () => {
     <>
       <div className="admin-page">
         <h1>Admin Page</h1>
-      </div>
+        <hr />
 
-      <div className="list">
-        <h2>All Users</h2>
-        <div className="comp-list">
-          {users.length === 0 ? (
-            <p>No users found.</p>
-          ) : (
-            users.map((user: any) =>
-              user.role === "admin" ? null : (
-                <div key={user._id} className="comp-card">
-                  <div className="info">
-                    <p>
-                      <strong>Name: </strong> {user.name}
-                    </p>
-                    <p>
-                      <strong>Email: </strong> {user.email}
-                    </p>
-                    <p>
-                      <strong>Role: </strong> {user.role}
-                    </p>
-                  </div>
-                </div>
-              )
-            )
-          )}
-        </div>
+        <AppDataTable
+          title="All Users"
+          data={users.filter((u: any) => u.role !== "admin")}
+          columns={userColumns}
+          isLoading={isLoading}
+        />
       </div>
     </>
   );

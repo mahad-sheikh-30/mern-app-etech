@@ -5,6 +5,8 @@ import crossImg from "../../assets/closee.png";
 import userImg from "../../assets/user-circle.png";
 import { useUser } from "../../context/UserContext";
 import userIcon from "../../assets/user.png";
+import { useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
@@ -24,9 +26,13 @@ const Navbar: React.FC = () => {
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
+  const queryClient = useQueryClient();
   const handleSignOut = () => {
     logout();
+    toast.success("Signed out successfully!");
     navigate("/signin");
+
+    queryClient.clear();
     setIsMenuOpen(false);
   };
 

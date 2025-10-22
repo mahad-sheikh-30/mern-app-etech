@@ -16,6 +16,12 @@ import { useLocation, useNavigate } from "react-router-dom";
 import CourseCard from "../../components/CourseCard/CourseCard";
 import type { Course } from "../../components/CourseCard/CourseCard";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createEnrollment } from "../../api/enrollmentApi";
+import toast from "react-hot-toast";
+import FullPageLoader from "../../components/FullPageLoader/FullPageLoader";
+import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
 
 const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
@@ -25,32 +31,52 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const { updateRole } = useUser();
+  const queryClient = useQueryClient();
+
+  const enrollMutation = useMutation({
+    mutationFn: (courseId: string) => createEnrollment({ courseId }),
+    onSuccess: async (_, courseId) => {
+      queryClient.setQueryData<string[]>(["enrolled"], (old = []) => [
+        ...old,
+        courseId,
+      ]);
+      await queryClient.invalidateQueries({ queryKey: ["enrolled"] });
+      updateRole("student");
+      navigate("/courses");
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.error || "Enrollment failed.");
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!stripe || !elements) return;
-    setLoading(true);
 
     const cardElement = elements.getElement(CardNumberElement);
     if (!cardElement) return;
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
-      {
-        payment_method: { card: cardElement },
-      }
-    );
+    try {
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: { card: cardElement },
+        }
+      );
 
-    if (error) {
-      setError(error.message || "Payment failed");
-      setLoading(false);
-    } else if (paymentIntent?.status === "succeeded") {
-      alert("Payment successful!");
-      updateRole("student");
-      navigate(`/courses`);
+      if (error) {
+        toast.error(error.message || "Payment failed");
+        return;
+      }
+
+      if (paymentIntent?.status === "succeeded") {
+        await enrollMutation.mutateAsync(course._id);
+        toast.success(`Payment successful! , Enrolled.`);
+      }
+    } catch (err: any) {
+      console.error("Payment error:", err);
+      toast.error("Payment failed. Please try again.");
     }
   };
 
@@ -88,11 +114,13 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
         </div>
       </div>
 
-      <button type="submit" className="pay-btn" disabled={loading}>
-        {loading ? "Processing..." : `Pay $${course.price}`}
+      <button
+        type="submit"
+        className="pay-btn"
+        disabled={enrollMutation.isPending}
+      >
+        {enrollMutation.isPending ? <LoadingSpinner /> : `Pay $${course.price}`}
       </button>
-
-      {error && <p className="error">{error}</p>}
     </form>
   );
 };
@@ -109,12 +137,12 @@ const PaymentPage: React.FC = () => {
       .then((res) => setClientSecret(res.data.clientSecret))
       .catch((err) => {
         console.error(err);
-        navigate("/error");
+        navigate("/");
       });
   }, [course, navigate]);
 
   if (!course) return <p>No course selected.</p>;
-  if (!clientSecret) return <p>Loading payment details...</p>;
+  if (!clientSecret) return <FullPageLoader />;
 
   return (
     <div className="payment-page">

@@ -2,6 +2,7 @@ import React, { useReducer, useState } from "react";
 import axios from "axios";
 import "./Contact.css";
 import API from "../../api/axiosInstance";
+import toast from "react-hot-toast";
 const Contact: React.FC = () => {
   interface formState {
     name: string;
@@ -53,18 +54,21 @@ const Contact: React.FC = () => {
 
     try {
       const res = await API.post("/contact", state);
-      alert("Form submitted successfully!");
-      console.log("Response:", res.data);
+      toast.success("Form submitted successfully!");
+      // console.log("Response:", res.data);
 
       dispatch({ type: "RESET" });
     } catch (err: any) {
       if (err.response) {
-        alert(err.response.data.message || "Failed to submit form");
+        toast.error(err.response.data.message || "Failed to submit form");
+
         console.error("Error:", err.response.data);
       } else if (err.request) {
-        alert("No response from server. Please check backend.");
+        toast.error("No response from server. Please check backend.");
       } else {
-        alert("Error: " + err.message);
+        toast.error("An error occurred while submitting the form.");
+
+        console.error("Error:", err.message);
       }
     }
   };
