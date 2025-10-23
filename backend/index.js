@@ -1,9 +1,12 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const connection = require("./config/db");
 const bodyParser = require("body-parser");
+const http = require("http");
+const { Server } = require("socket.io");
+const connection = require("./config/db");
 
+// 📦 Import routes
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
 const contactRoutes = require("./routes/contact");
@@ -13,11 +16,20 @@ const enrollmentRoutes = require("./routes/enrollments");
 const paymentRoutes = require("./routes/payment");
 const transactionRoutes = require("./routes/transactions");
 const googleAuth = require("./routes/googleAuth");
-
 const { handleWebhook } = require("./routes/payment");
 
 const app = express();
 connection();
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    // methods: ["GET", "POST"],
+  },
+});
+
+app.set("io", io);
 
 app.post(
   "/api/payment/webhook",
@@ -39,4 +51,4 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/transactions", transactionRoutes);
 
 const port = process.env.PORT || 8080;
-app.listen(port, () => console.log(`✅ Listening on port ${port}...`));
+server.listen(port, () => console.log(`✅ Server running on port ${port}...`));

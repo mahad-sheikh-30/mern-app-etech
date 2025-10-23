@@ -4,6 +4,7 @@ const { User } = require("../models/user");
 
 exports.createEnrollment = async (req, res) => {
   try {
+    const io = req.app.get("io");
     const { courseId } = req.body;
     const userId = req.user._id;
 
@@ -26,6 +27,12 @@ exports.createEnrollment = async (req, res) => {
       console.log("User not found");
       return;
     }
+
+    io.emit("enrollmentCreated", {
+      userId,
+      courseId,
+      message: `New enrollment: User ${user.name} enrolled in a course!`,
+    });
 
     res.status(201).json(enrollment);
   } catch (err) {

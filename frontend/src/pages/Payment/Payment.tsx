@@ -31,24 +31,24 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
-  const { updateRole } = useUser();
-  const queryClient = useQueryClient();
-
-  const enrollMutation = useMutation({
-    mutationFn: (courseId: string) => createEnrollment({ courseId }),
-    onSuccess: async (_, courseId) => {
-      queryClient.setQueryData<string[]>(["enrolled"], (old = []) => [
-        ...old,
-        courseId,
-      ]);
-      await queryClient.invalidateQueries({ queryKey: ["enrolled"] });
-      updateRole("student");
-      navigate("/courses");
-    },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error || "Enrollment failed.");
-    },
-  });
+  // const { updateRole } = useUser();
+  // const queryClient = useQueryClient();
+  const [isProcessing, setIsProcessing] = useState(false);
+  // const enrollMutation = useMutation({
+  //   mutationFn: (courseId: string) => createEnrollment({ courseId }),
+  //   onSuccess: async (_, courseId) => {
+  //     queryClient.setQueryData<string[]>(["enrolled"], (old = []) => [
+  //       ...old,
+  //       courseId,
+  //     ]);
+  //     await queryClient.invalidateQueries({ queryKey: ["enrolled"] });
+  //     updateRole("student");
+  //     navigate("/courses");
+  //   },
+  //   onError: (err: any) => {
+  //     toast.error(err?.response?.data?.error || "Enrollment failed.");
+  //   },
+  // });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +58,7 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
     if (!cardElement) return;
 
     try {
+      setIsProcessing(true);
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
         {
@@ -67,16 +68,23 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
 
       if (error) {
         toast.error(error.message || "Payment failed");
+        setIsProcessing(false);
         return;
       }
 
       if (paymentIntent?.status === "succeeded") {
-        await enrollMutation.mutateAsync(course._id);
-        toast.success(`Payment successful! , Enrolled.`);
+        // await enrollMutation.mutateAsync(course._id);
+        toast.success(
+          `Payment successful! Enrollment will be confirmed shortly.`
+        );
+        navigate("/courses");
+        // toast.success(`Payment successful! , Enrolled.`);
       }
     } catch (err: any) {
       console.error("Payment error:", err);
       toast.error("Payment failed. Please try again.");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -114,12 +122,8 @@ const CheckoutForm: React.FC<{ clientSecret: string; course: Course }> = ({
         </div>
       </div>
 
-      <button
-        type="submit"
-        className="pay-btn"
-        disabled={enrollMutation.isPending}
-      >
-        {enrollMutation.isPending ? <LoadingSpinner /> : `Pay $${course.price}`}
+      <button type="submit" className="pay-btn" disabled={isProcessing}>
+        {isProcessing ? <LoadingSpinner /> : `Pay $${course.price}`}
       </button>
     </form>
   );

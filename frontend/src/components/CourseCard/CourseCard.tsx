@@ -54,7 +54,7 @@ const CourseCard: React.FC<{
   const [modalOpen, setModalOpen] = useState(false);
   // console.log("Enrolled Courses in CourseCard:", enrolledCourses);
   const isEnroll = enrolledCourses.includes(course._id);
-  console.log("isEnroll for course", course._id, ":", isEnroll);
+  // console.log("isEnroll for course", course._id, ":", isEnroll);
 
   const handleEnroll = async (e: React.MouseEvent) => {
     e.stopPropagation();

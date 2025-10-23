@@ -142,11 +142,17 @@ exports.handleWebhook = async (req, res) => {
           await Course.findByIdAndUpdate(courseId, {
             $inc: { studentsCount: 1 },
           });
-          await User.findByIdAndUpdate(
+          const user = await User.findByIdAndUpdate(
             userId,
             { role: "student" },
             { new: true }
           );
+          const io = req.app.get("io");
+          io.emit("enrollmentCreated", {
+            userId,
+            courseId,
+            message: `New enrollment: User ${user.name} enrolled in a course!`,
+          });
         }
       }
     }

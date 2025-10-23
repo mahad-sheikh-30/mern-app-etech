@@ -6,6 +6,7 @@ import { useUser } from "../../context/UserContext";
 import { useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import AppDataTable from "../../components/AppDataTable/AppDataTable";
+import { io, Socket } from "socket.io-client";
 
 const userColumns = [
   { name: "Name", selector: (row: any) => row.name, sortable: true },
@@ -15,6 +16,24 @@ const userColumns = [
 
 const AdminPanel: React.FC = () => {
   const { user } = useUser();
+  const [socket, setSocket] = useState<Socket | null>(null);
+
+  useEffect(() => {
+    const newSocket = io(
+      import.meta.env.VITE_BACKEND_URL || "http://localhost:8080"
+    );
+    setSocket(newSocket);
+
+    newSocket.on("enrollmentCreated", (data) => {
+      console.log("🎓 New enrollment event:", data);
+      toast.success(data.message || "A student enrolled in a new course!");
+    });
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, []);
+
   if (!user?.token) {
     toast.error("Please sign in first!");
     return;
@@ -27,33 +46,17 @@ const AdminPanel: React.FC = () => {
 
   if (isLoading) return <h2>Loading users...</h2>;
 
-  //  useEffect(() => {
-  //   fetchUsers();
-  // }, []);
-  // const [users, setUsers] = useState<any>([]);
-  // const fetchUsers = async () => {
-  //   try {
-  //     const res = await API.get("/users");
-  //     setUsers(res.data);
-  //   } catch (err) {
-  //     console.error("Error fetching users:", err);
-  //   }
-  // };
-
   return (
-    <>
-      <div className="admin-page">
-        <h1>Admin Page</h1>
-        <hr />
-
-        <AppDataTable
-          title="All Users"
-          data={users.filter((u: any) => u.role !== "admin")}
-          columns={userColumns}
-          isLoading={isLoading}
-        />
-      </div>
-    </>
+    <div className="admin-page">
+      <h1>Admin Page</h1>
+      <hr />
+      <AppDataTable
+        title="All Users"
+        data={users.filter((u: any) => u.role !== "admin")}
+        columns={userColumns}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };
 

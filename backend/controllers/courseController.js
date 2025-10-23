@@ -14,6 +14,12 @@ exports.createCourse = async (req, res) => {
     const course = new Course({ ...req.body, image: imageUrl });
     await course.save();
 
+    const io = req.app.get("io");
+    io.emit("courseCreated", {
+      message: `New course added: ${course.title}`,
+      course,
+    });
+
     res.status(201).json({ message: "Course created", course });
   } catch (err) {
     console.error("Error creating course:", err);
