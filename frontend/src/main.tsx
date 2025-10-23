@@ -6,7 +6,11 @@ import App from "./App.tsx";
 
 import { UserProvider } from "./context/UserContext";
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.getElementById("root")!;
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+createRoot(rootElement).render(
   <UserProvider>
     <QueryClientProvider client={queryClient}>
       <App />
