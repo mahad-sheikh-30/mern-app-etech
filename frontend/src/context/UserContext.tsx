@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 
 interface User {
+  _id: string;
   name: string;
   email: string;
   role: string;
@@ -25,6 +26,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
     if (!token) return null;
     return {
       token,
+      _id: localStorage.getItem("_id") || "",
       name: localStorage.getItem("name") || "",
       email: localStorage.getItem("email") || "",
       role: localStorage.getItem("role") || "user",
@@ -32,6 +34,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({
   });
 
   const setUser = (user: User) => {
+    localStorage.setItem("_id", user._id);
     localStorage.setItem("token", user.token);
     localStorage.setItem("name", user.name);
     localStorage.setItem("email", user.email);

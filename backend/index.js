@@ -6,7 +6,6 @@ const http = require("http");
 const { Server } = require("socket.io");
 const connection = require("./config/db");
 
-// 📦 Import routes
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
 const contactRoutes = require("./routes/contact");
@@ -16,6 +15,7 @@ const enrollmentRoutes = require("./routes/enrollments");
 const paymentRoutes = require("./routes/payment");
 const transactionRoutes = require("./routes/transactions");
 const googleAuth = require("./routes/googleAuth");
+const notificationRoutes = require("./routes/notifications");
 const { handleWebhook } = require("./routes/payment");
 
 const app = express();
@@ -39,6 +39,8 @@ app.post(
 
 app.use(cors());
 app.use(express.json());
+
+app.use("/api/notifications", notificationRoutes);
 
 app.use("/api/google-auth", googleAuth);
 app.use("/api/users", userRoutes);

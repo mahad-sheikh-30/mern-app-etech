@@ -24,6 +24,7 @@ const SignIn: React.FC = () => {
       const { data: res } = await API.post("/auth", data);
       localStorage.setItem("token", res.data);
       setUser({
+        _id: res.data._id,
         name: res.name,
         email: res.email,
         role: res.role,
@@ -45,6 +46,7 @@ const SignIn: React.FC = () => {
 
       localStorage.setItem("token", res.data);
       setUser({
+        _id: res.data._id,
         name: res.name,
         email: res.email,
         role: res.role,

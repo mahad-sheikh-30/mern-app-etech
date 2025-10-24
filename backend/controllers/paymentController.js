@@ -3,6 +3,7 @@ const Enrollment = require("../models/enrollment");
 const Course = require("../models/course");
 const { User } = require("../models/user");
 const Transaction = require("../models/transaction");
+const Notification = require("../models/notification");
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -153,6 +154,21 @@ exports.handleWebhook = async (req, res) => {
             courseId,
             message: `New enrollment: User ${user.name} enrolled in a course!`,
           });
+          const admin = await User.findOne({ role: "admin" });
+          if (admin) {
+            io.to(admin._id.toString()).emit("notification", {
+              message: `User ${req.user.name} enrolled in ${course.title}`,
+              type: "enrollment",
+              data: { courseId, userId: req.user._id },
+            });
+
+            await Notification.create({
+              userId: admin._id,
+              message: `User ${req.user.name} enrolled in ${course.title}`,
+              type: "enrollment",
+              data: { courseId, userId: req.user._id },
+            });
+          }
         }
       }
     }

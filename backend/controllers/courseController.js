@@ -1,6 +1,8 @@
 const Course = require("../models/course");
 const Enrollment = require("../models/enrollment");
 const uploadToCloudinary = require("../utils/cloudinaryUpload");
+const Notification = require("../models/notification");
+const { User } = require("../models/user");
 
 exports.createCourse = async (req, res) => {
   try {
@@ -15,10 +17,33 @@ exports.createCourse = async (req, res) => {
     await course.save();
 
     const io = req.app.get("io");
+
+    // Emit general event (optional)
     io.emit("courseCreated", {
       message: `New course added: ${course.title}`,
       course,
     });
+
+    // Fetch all students
+    const students = await User.find({ role: "student" });
+
+    // Send notifications
+    await Promise.all(
+      students.map(async (student) => {
+        io.to(student._id.toString()).emit("notification", {
+          message: `New course added: ${course.title}`,
+          type: "course",
+          data: { courseId: course._id },
+        });
+
+        await Notification.create({
+          userId: student._id,
+          message: `New course added: ${course.title}`,
+          type: "course",
+          data: { courseId: course._id },
+        });
+      })
+    );
 
     res.status(201).json({ message: "Course created", course });
   } catch (err) {
@@ -49,7 +74,6 @@ exports.getCourseById = async (req, res) => {
   }
 };
 
-// 🟢 Update a course (Admin only)
 exports.updateCourse = async (req, res) => {
   try {
     const id = req.params.id;
@@ -75,7 +99,6 @@ exports.updateCourse = async (req, res) => {
   }
 };
 
-// 🟢 Delete a course (Admin only)
 exports.deleteCourse = async (req, res) => {
   try {
     const id = req.params.id;

@@ -21,6 +21,7 @@ exports.login = async (req, res) => {
     const token = user.generateAuthToken();
     res.status(200).send({
       data: token,
+      _id: user._id,
       role: user.role,
       name: user.name,
       email: user.email,
