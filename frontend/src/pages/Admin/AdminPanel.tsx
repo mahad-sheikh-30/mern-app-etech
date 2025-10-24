@@ -16,23 +16,6 @@ const userColumns = [
 
 const AdminPanel: React.FC = () => {
   const { user } = useUser();
-  const [socket, setSocket] = useState<Socket | null>(null);
-
-  useEffect(() => {
-    const newSocket = io(
-      import.meta.env.VITE_BACKEND_URL || "http://localhost:8080"
-    );
-    setSocket(newSocket);
-
-    newSocket.on("enrollmentCreated", (data) => {
-      console.log("🎓 New enrollment event:", data);
-      toast.success(data.message || "A student enrolled in a new course!");
-    });
-
-    return () => {
-      newSocket.disconnect();
-    };
-  }, []);
 
   if (!user?.token) {
     toast.error("Please sign in first!");

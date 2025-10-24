@@ -2,48 +2,32 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import crossImg from "../../assets/closee.png";
-import userIcon from "../../assets/user.png";
 import { useUser } from "../../context/UserContext";
-import { useQueryClient } from "@tanstack/react-query";
+import userIcon from "../../assets/user.png";
 import toast from "react-hot-toast";
-import { useNotifications } from "../../hooks/useNotifications";
-import bellIcon from "../../assets/bell.png";
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout } = useUser();
-  const { notifications, unreadCount, markAsRead } = useNotifications(
-    user?._id
-  );
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
 
-  // Close dropdowns if clicked outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (
-        !target.closest(".user-img") &&
-        !target.closest(".user-info") &&
-        !target.closest(".notif-icon") &&
-        !target.closest(".notif-dropdown")
-      ) {
+      if (!target.closest(".user-img") && !target.closest(".user-info")) {
         setIsUserOpen(false);
-        setIsNotifOpen(false);
       }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const queryClient = useQueryClient();
   const handleSignOut = () => {
     logout();
     toast.success("Signed out successfully!");
     navigate("/signin");
-    queryClient.clear();
     setIsMenuOpen(false);
   };
 
@@ -75,42 +59,19 @@ const Navbar: React.FC = () => {
           </ul>
         </div>
 
-        <div className="user-notif-container">
-          {user ? (
+        <div className="sign-trial">
+          {!user ? (
+            <Link to="/signin">
+              <button className="sign-in-btn button">Sign In</button>
+            </Link>
+          ) : (
             <>
-              {/* Notification Bell */}
-              <div className="notif-container">
-                <div
-                  className="notif-icon"
-                  onClick={() => setIsNotifOpen(!isNotifOpen)}
-                >
-                  <img src={bellIcon} alt="Notifications" />
-                  {unreadCount > 0 && (
-                    <span className="notif-badge">{unreadCount}</span>
-                  )}
-                </div>
-                {isNotifOpen && (
-                  <div className="notif-dropdown">
-                    {notifications.length === 0 && <p>No notifications</p>}
-                    {notifications.map((notif) => (
-                      <div
-                        key={notif._id}
-                        className={`notif-item ${notif.read ? "" : "unread"}`}
-                        onClick={() => markAsRead(notif._id)}
-                      >
-                        {notif.message}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* User Image */}
               <div
                 className="user-img"
                 onClick={() => setIsUserOpen(!isUserOpen)}
               >
                 <img src={userIcon} alt="" />
+
                 {isUserOpen && (
                   <div className="user-info">
                     <h4>{name?.toUpperCase()}</h4>
@@ -119,6 +80,7 @@ const Navbar: React.FC = () => {
                     <hr />
                     <h4>{role?.toUpperCase()}</h4>
                     <hr />
+
                     {role === "admin" && (
                       <>
                         <button
@@ -139,18 +101,13 @@ const Navbar: React.FC = () => {
                         <hr />
                       </>
                     )}
-                    <button onClick={handleSignOut} className="button">
+                    <button onClick={handleSignOut} className=" button">
                       Sign Out
                     </button>
                   </div>
                 )}
               </div>
             </>
-          ) : (
-            // Sign In button when not logged in
-            <Link to="/signin">
-              <button className="sign-in-btn button">Sign In</button>
-            </Link>
           )}
         </div>
 
@@ -165,13 +122,101 @@ const Navbar: React.FC = () => {
           <span className="bar"></span>
         </button>
       </nav>
-
-      {/* Mobile menu remains the same */}
       <div
         className={`mobile-menu ${isMenuOpen ? "open" : ""}`}
         id="mobileMenu"
       >
-        {/* ...mobile menu code */}
+        <div className="mobile-header">
+          <Link
+            to="/"
+            className="logo mobile-logo"
+            onClick={() => setIsMenuOpen(false)}
+          >
+            <h1>Etech.</h1>
+          </Link>
+
+          <button
+            className="close-icon"
+            onClick={() => setIsMenuOpen(false)}
+            aria-label="Close menu"
+          >
+            <img src={crossImg} alt="close" />
+          </button>
+        </div>
+        <hr />
+
+        <ul>
+          <li>
+            <Link to="/courses" onClick={() => setIsMenuOpen(false)}>
+              Courses
+            </Link>
+          </li>
+          <li>
+            <Link to="/teachers" onClick={() => setIsMenuOpen(false)}>
+              Teachers
+            </Link>
+          </li>
+          <li>
+            <Link to="/about" onClick={() => setIsMenuOpen(false)}>
+              About
+            </Link>
+          </li>
+          <li>
+            <Link to="/contact" onClick={() => setIsMenuOpen(false)}>
+              Contact
+            </Link>
+          </li>
+        </ul>
+        {user ? (
+          <div className="mobile-user-card">
+            <div className="mobile-user-header">
+              <h3>{name?.toUpperCase()}</h3>
+              <p>{email}</p>
+              <span className="user-role">{role?.toUpperCase()}</span>
+            </div>
+
+            <div className="mobile-user-actions">
+              {role === "admin" && (
+                <button
+                  onClick={() => {
+                    navigate("/admin");
+                    setIsMenuOpen(false);
+                  }}
+                  className="button admin-btn"
+                >
+                  Admin Panel
+                </button>
+              )}
+              {role === "student" && (
+                <Link
+                  to="/transactions"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="button"
+                >
+                  My Transactions
+                </Link>
+              )}
+            </div>
+          </div>
+        ) : (
+          <></>
+        )}
+
+        <div className="mobile-buttons">
+          {!user ? (
+            <Link to="/signin" onClick={() => setIsMenuOpen(false)}>
+              <button className="sign-in-btn button">Sign In</button>
+            </Link>
+          ) : (
+            <button onClick={handleSignOut} className="sign-in-btn button">
+              Sign Out
+            </button>
+          )}
+
+          <Link to="/" onClick={() => setIsMenuOpen(false)}>
+            <button className="home-btn button">Go Back Home</button>
+          </Link>
+        </div>
       </div>
     </>
   );

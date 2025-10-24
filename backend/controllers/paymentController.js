@@ -149,24 +149,27 @@ exports.handleWebhook = async (req, res) => {
             { new: true }
           );
           const io = req.app.get("io");
-          io.emit("enrollmentCreated", {
-            userId,
-            courseId,
-            message: `New enrollment: User ${user.name} enrolled in a course!`,
-          });
+          // io.emit("enrollmentCreated", {
+          //   userId,
+          //   courseId,
+          //   message: `New enrollment: User ${user.name} enrolled in a course!`,
+          // });
           const admin = await User.findOne({ role: "admin" });
+          // constuser = await User.findById(userId);
           if (admin) {
+            const message = `User ${user.name} enrolled in ${course.title}`;
+
             io.to(admin._id.toString()).emit("notification", {
-              message: `User ${req.user.name} enrolled in ${course.title}`,
+              message,
               type: "enrollment",
-              data: { courseId, userId: req.user._id },
+              data: { courseId, userId },
             });
 
             await Notification.create({
               userId: admin._id,
-              message: `User ${req.user.name} enrolled in ${course.title}`,
+              message,
               type: "enrollment",
-              data: { courseId, userId: req.user._id },
+              data: { courseId, userId },
             });
           }
         }

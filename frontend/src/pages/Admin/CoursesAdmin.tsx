@@ -78,7 +78,10 @@ const CoursesAdmin: React.FC = () => {
 
   const deleteMutation = useMutation({
     mutationFn: (_id: string) => deleteCourse(_id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["courses"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["courses"] });
+      toast.success("Course Deleted!");
+    },
     onError: () => toast.error("Delete failed"),
   });
 

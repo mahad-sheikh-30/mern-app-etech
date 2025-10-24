@@ -1,5 +1,6 @@
 const Enrollment = require("../models/enrollment");
 const Course = require("../models/course");
+const Notification = require("../models/notification");
 const { User } = require("../models/user");
 
 exports.createEnrollment = async (req, res) => {
@@ -12,11 +13,18 @@ exports.createEnrollment = async (req, res) => {
       return res.status(400).json({ error: "courseId is required" });
     }
 
+    // Save enrollment
     const enrollment = new Enrollment({ userId, courseId });
     await enrollment.save();
 
-    await Course.findByIdAndUpdate(courseId, { $inc: { studentsCount: 1 } });
+    // Update course student count
+    const course = await Course.findByIdAndUpdate(
+      courseId,
+      { $inc: { studentsCount: 1 } },
+      { new: true }
+    );
 
+    // Update user role
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { role: "student" },
@@ -25,17 +33,40 @@ exports.createEnrollment = async (req, res) => {
 
     if (!updatedUser) {
       console.log("User not found");
-      return;
+      return res.status(404).json({ error: "User not found" });
     }
 
+    // 🔧 Use updatedUser instead of 'user'
     io.emit("enrollmentCreated", {
       userId,
       courseId,
-      message: `New enrollment: User ${user.name} enrolled in a course!`,
+      message: `New enrollment: ${updatedUser.name} enrolled in ${
+        course?.title || "a course"
+      }!`,
     });
+
+    // Notify admin in real-time
+    const admin = await User.findOne({ role: "admin" });
+    if (admin) {
+      const message = `User ${updatedUser.name} enrolled in ${course?.title}`;
+      io.to(admin._id.toString()).emit("notification", {
+        message,
+        type: "enrollment",
+        data: { courseId, userId },
+      });
+
+      // Save in DB
+      await Notification.create({
+        userId: admin._id,
+        message,
+        type: "enrollment",
+        data: { courseId, userId },
+      });
+    }
 
     res.status(201).json(enrollment);
   } catch (err) {
+    console.error("Enrollment Error:", err);
     if (err.code === 11000) {
       return res
         .status(400)

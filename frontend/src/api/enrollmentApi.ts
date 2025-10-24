@@ -6,7 +6,7 @@ export const getAllEnrollments = async () => {
 };
 export const getEnrolledCourses = async () => {
   const res = await API.get("/enrollments/my");
-  console.log("Enrolled courses response:", res.data);
+  // console.log("Enrolled courses response:", res.data);
  
   return res.data;
 };

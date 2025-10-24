@@ -23,8 +23,9 @@ const SignIn: React.FC = () => {
     try {
       const { data: res } = await API.post("/auth", data);
       localStorage.setItem("token", res.data);
+      console.log("response after login:", res);
       setUser({
-        _id: res.data._id,
+        _id: res._id,
         name: res.name,
         email: res.email,
         role: res.role,
@@ -44,9 +45,10 @@ const SignIn: React.FC = () => {
 
       const { data: res } = await API.post("/google-auth", { credential });
 
+      console.log("response after login:", res);
       localStorage.setItem("token", res.data);
       setUser({
-        _id: res.data._id,
+        _id: res._id,
         name: res.name,
         email: res.email,
         role: res.role,

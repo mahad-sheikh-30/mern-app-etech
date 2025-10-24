@@ -31,6 +31,20 @@ const io = new Server(server, {
 
 app.set("io", io);
 
+io.on("connection", (socket) => {
+  console.log("New socket connected:", socket.id);
+
+  socket.on("joinRoom", (userId) => {
+    if (!userId) return;
+    socket.join(userId);
+    console.log(`Socket ${socket.id} joined room ${userId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
+});
+
 app.post(
   "/api/payment/webhook",
   bodyParser.raw({ type: "application/json" }),

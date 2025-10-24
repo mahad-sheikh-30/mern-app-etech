@@ -26,6 +26,7 @@ exports.googleSignIn = async (req, res) => {
     const token = user.generateAuthToken();
 
     res.status(200).send({
+      _id: user._id,
       data: token,
       role: user.role,
       name: user.name,

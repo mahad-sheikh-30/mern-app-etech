@@ -28,14 +28,21 @@ exports.createCourse = async (req, res) => {
     const students = await User.find({ role: "student" });
 
     // Send notifications
+    // inside createCourse
     await Promise.all(
       students.map(async (student) => {
+        // Emit to the user’s room
+        console.log(
+          "Emitting notification to student:",
+          student._id.toString()
+        );
         io.to(student._id.toString()).emit("notification", {
           message: `New course added: ${course.title}`,
           type: "course",
           data: { courseId: course._id },
         });
 
+        // Save to DB
         await Notification.create({
           userId: student._id,
           message: `New course added: ${course.title}`,
