@@ -5,19 +5,27 @@ const notificationSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
+      required: false, // ✅ make optional
+    },
+    message: {
+      type: String,
       required: true,
     },
-    message: { type: String, required: true },
     type: {
       type: String,
-      enum: ["course", "enrollment", "chat"],
-      default: "course",
+      enum: ["course", "enrollment", "system"],
+      default: "system",
     },
-    read: { type: Boolean, default: false },
-    data: { type: Object }, // optional extra data like courseId, enrollmentId
+    data: {
+      type: Object,
+    },
+    forRole: {
+      type: String, // e.g. "student", "admin", "all"
+      default: "all",
+    },
+    readBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
-const Notification = mongoose.model("Notification", notificationSchema);
-module.exports = Notification;
+module.exports = mongoose.model("Notification", notificationSchema);

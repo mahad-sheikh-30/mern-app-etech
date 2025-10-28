@@ -9,69 +9,52 @@ exports.createEnrollment = async (req, res) => {
     const { courseId } = req.body;
     const userId = req.user._id;
 
-    if (!courseId) {
+    if (!courseId)
       return res.status(400).json({ error: "courseId is required" });
-    }
 
-    // Save enrollment
-    const enrollment = new Enrollment({ userId, courseId });
-    await enrollment.save();
+    // Avoid duplicates
+    const existing = await Enrollment.findOne({ userId, courseId });
+    if (existing)
+      return res
+        .status(400)
+        .json({ error: "User already enrolled in this course" });
 
-    // Update course student count
-    const course = await Course.findByIdAndUpdate(
-      courseId,
-      { $inc: { studentsCount: 1 } },
-      { new: true }
-    );
+    const enrollment = await Enrollment.create({ userId, courseId });
 
-    // Update user role
-    const updatedUser = await User.findByIdAndUpdate(
+    await Course.findByIdAndUpdate(courseId, { $inc: { studentsCount: 1 } });
+    const user = await User.findByIdAndUpdate(
       userId,
       { role: "student" },
       { new: true }
     );
 
-    if (!updatedUser) {
-      console.log("User not found");
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // 🔧 Use updatedUser instead of 'user'
-    io.emit("enrollmentCreated", {
-      userId,
-      courseId,
-      message: `New enrollment: ${updatedUser.name} enrolled in ${
-        course?.title || "a course"
-      }!`,
-    });
-
-    // Notify admin in real-time
     const admin = await User.findOne({ role: "admin" });
-    if (admin) {
-      const message = `User ${updatedUser.name} enrolled in ${course?.title}`;
-      io.to(admin._id.toString()).emit("notification", {
-        message,
-        type: "enrollment",
-        data: { courseId, userId },
-      });
+    const course = await Course.findById(courseId);
 
-      // Save in DB
+    if (admin && user && course) {
+      const message = `User ${user.name} enrolled in ${course.title}`;
+
+      // Create one admin-only notification
       await Notification.create({
         userId: admin._id,
         message,
         type: "enrollment",
         data: { courseId, userId },
       });
+
+      // Emit real-time to admin only
+      io.to(admin._id.toString()).emit("notification", {
+        message,
+        type: "enrollment",
+        data: { courseId, userId },
+      });
+
+      console.log("✅ Enrollment notification sent to admin");
     }
 
-    res.status(201).json(enrollment);
+    res.status(201).json({ message: "Enrollment created", enrollment });
   } catch (err) {
-    console.error("Enrollment Error:", err);
-    if (err.code === 11000) {
-      return res
-        .status(400)
-        .json({ error: "User already enrolled in this course" });
-    }
+    console.error("❌ Enrollment Error:", err);
     res.status(500).json({ error: err.message });
   }
 };

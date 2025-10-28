@@ -3,27 +3,27 @@ const Notification = require("../models/notification");
 // Get all notifications for logged-in user
 exports.getNotifications = async (req, res) => {
   try {
-    const notifications = await Notification.find({
-      userId: req.user._id,
-    }).sort({ createdAt: -1 });
-    res.json(notifications);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
+    const user = req.user;
 
-// Mark single notification as read
-exports.markAsRead = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const notification = await Notification.findByIdAndUpdate(
-      id,
-      { read: true },
-      { new: true }
-    );
-    if (!notification)
-      return res.status(404).json({ error: "Notification not found" });
-    res.json(notification);
+    let query = { userId: user._id };
+
+    if (user.role === "student") {
+      query = {
+        $or: [{ userId: user._id }, { forRole: "student" }],
+      };
+    }
+
+    const notifications = await Notification.find(query).sort({
+      createdAt: -1,
+    });
+
+    // ✅ Add computed `read` field dynamically per user
+    const formatted = notifications.map((n) => ({
+      ...n.toObject(),
+      read: n.readBy?.includes(user._id),
+    }));
+
+    res.json(formatted);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -35,11 +35,39 @@ exports.createNotification = async ({
   message,
   type = "course",
   data,
+  forRole = "all",
 }) => {
   try {
-    const notif = await Notification.create({ userId, message, type, data });
+    const notif = await Notification.create({
+      userId,
+      message,
+      type,
+      data,
+      forRole,
+    });
     return notif;
   } catch (err) {
     console.error("Error creating notification:", err.message);
+  }
+};
+
+// Mark single notification as read
+exports.markAsRead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user._id;
+
+    const notification = await Notification.findByIdAndUpdate(
+      id,
+      { $addToSet: { readBy: userId } }, // ✅ add user to read list
+      { new: true }
+    );
+
+    if (!notification)
+      return res.status(404).json({ error: "Notification not found" });
+
+    res.json(notification);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

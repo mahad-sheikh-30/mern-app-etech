@@ -14,6 +14,7 @@ const courseRoutes = require("./routes/courses");
 const enrollmentRoutes = require("./routes/enrollments");
 const paymentRoutes = require("./routes/payment");
 const transactionRoutes = require("./routes/transactions");
+
 const googleAuth = require("./routes/googleAuth");
 const notificationRoutes = require("./routes/notifications");
 const { handleWebhook } = require("./routes/payment");
@@ -39,7 +40,18 @@ io.on("connection", (socket) => {
     socket.join(userId);
     console.log(`Socket ${socket.id} joined room ${userId}`);
   });
+  // 🔹 Handle sending a message
+  socket.on("sendMessage", async ({ senderId, receiverId, content }) => {
+    try {
+      const message = await Message.create({ senderId, receiverId, content });
 
+      // Emit to receiver in real time
+      io.to(receiverId).emit("receiveMessage", message);
+      io.to(senderId).emit("messageSent", message);
+    } catch (err) {
+      console.error("❌ Error saving message:", err);
+    }
+  });
   socket.on("disconnect", () => {
     console.log("Socket disconnected:", socket.id);
   });

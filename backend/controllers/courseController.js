@@ -13,48 +13,37 @@ exports.createCourse = async (req, res) => {
       imageUrl = result.secure_url;
     }
 
-    const course = new Course({ ...req.body, image: imageUrl });
-    await course.save();
-
+    const course = await Course.create({ ...req.body, image: imageUrl });
     const io = req.app.get("io");
 
-    // Emit general event (optional)
-    io.emit("courseCreated", {
-      message: `New course added: ${course.title}`,
-      course,
+    // ✅ Create only one DB notification entry (for all)
+    const message = `New course added: ${course.title}`;
+    const notification = await Notification.create({
+      message,
+      type: "course",
+      data: { courseId: course._id },
+      userId: null,
+      forRole: "student",
     });
 
-    // Fetch all students
+    // ✅ Get all connected students only
     const students = await User.find({ role: "student" });
 
-    // Send notifications
-    // inside createCourse
-    await Promise.all(
-      students.map(async (student) => {
-        // Emit to the user’s room
-        console.log(
-          "Emitting notification to student:",
-          student._id.toString()
-        );
-        io.to(student._id.toString()).emit("notification", {
-          message: `New course added: ${course.title}`,
-          type: "course",
-          data: { courseId: course._id },
-        });
+    console.log(students);
+    students.forEach((student) => {
+      io.to(student._id.toString()).emit("notification", {
+        _id: notification._id, // optional for duplicate checking in frontend
+        message,
+        type: "course",
+        data: { courseId: course._id },
+      });
+    });
 
-        // Save to DB
-        await Notification.create({
-          userId: student._id,
-          message: `New course added: ${course.title}`,
-          type: "course",
-          data: { courseId: course._id },
-        });
-      })
-    );
+    console.log(`✅ Course notification sent to ${students.length} students`);
 
     res.status(201).json({ message: "Course created", course });
   } catch (err) {
-    console.error("Error creating course:", err);
+    console.error("❌ Error creating course:", err);
     res.status(500).json({ error: err.message });
   }
 };

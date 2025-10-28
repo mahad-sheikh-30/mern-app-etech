@@ -85,86 +85,62 @@ exports.handleWebhook = async (req, res) => {
   }
 
   try {
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const { userId, courseId } = session.metadata;
+    const io = req.app.get("io");
 
-      const alreadyExists = await Transaction.findOne({
-        stripeSessionId: session.id,
+    if (
+      ["checkout.session.completed", "payment_intent.succeeded"].includes(
+        event.type
+      )
+    ) {
+      const data = event.data.object;
+      const { userId, courseId } = data.metadata || {};
+
+      if (!userId || !courseId) return res.status(400).send("Missing metadata");
+
+      const course = await Course.findById(courseId);
+      if (!course) return res.status(404).send("Course not found");
+
+      const paymentIntentId = data.payment_intent || data.id;
+      const existingTxn = await Transaction.findOne({ paymentIntentId });
+      if (existingTxn) return res.status(200).send("Duplicate ignored");
+
+      await Transaction.create({
+        userId,
+        courseId,
+        paymentIntentId,
+        amount: course.price,
+        paymentMethod:
+          data.payment_method_types?.[0] || data.payment_method || "card",
       });
 
-      if (!alreadyExists) {
-        const course = await Course.findById(courseId);
-
-        await Transaction.create({
-          userId,
-          courseId,
-          stripeSessionId: session.id,
-          paymentIntentId: session.payment_intent,
-          amount: course.price,
-          paymentMethod: session.payment_method_types[0],
+      const existingEnroll = await Enrollment.findOne({ userId, courseId });
+      if (!existingEnroll) {
+        await Enrollment.create({ userId, courseId });
+        await Course.findByIdAndUpdate(courseId, {
+          $inc: { studentsCount: 1 },
         });
+        await User.findByIdAndUpdate(userId, { role: "student" });
 
-        const existing = await Enrollment.findOne({ userId, courseId });
-        if (!existing) {
-          await Enrollment.create({ userId, courseId });
-          await Course.findByIdAndUpdate(courseId, {
-            $inc: { studentsCount: 1 },
+        const admin = await User.findOne({ role: "admin" });
+        const user = await User.findById(userId);
+
+        if (admin && user) {
+          const message = `User ${user.name} enrolled in ${course.title}`;
+
+          io.to(admin._id.toString()).emit("notification", {
+            message,
+            type: "enrollment",
+            data: { courseId, userId },
           });
-          await User.findByIdAndUpdate(
-            userId,
-            { role: "student" },
-            { new: true }
-          );
-        }
-      }
-    } else if (event.type === "payment_intent.succeeded") {
-      const intent = event.data.object;
-      const { userId, courseId } = intent.metadata;
 
-      const alreadyExists = await Transaction.findOne({
-        paymentIntentId: intent.id,
-      });
-
-      if (!alreadyExists) {
-        const course = await Course.findById(courseId);
-
-        await Transaction.create({
-          userId,
-          courseId,
-          paymentIntentId: intent.id,
-          amount: course.price,
-          paymentMethod: intent.payment_method_types[0] || "card",
-        });
-
-        const existing = await Enrollment.findOne({ userId, courseId });
-        if (!existing) {
-          await Enrollment.create({ userId, courseId });
-          await Course.findByIdAndUpdate(courseId, {
-            $inc: { studentsCount: 1 },
+          const exists = await Notification.findOne({
+            userId: admin._id,
+            "data.courseId": courseId,
+            "data.userId": userId,
+            type: "enrollment",
           });
-          const user = await User.findByIdAndUpdate(
-            userId,
-            { role: "student" },
-            { new: true }
-          );
-          const io = req.app.get("io");
-          // io.emit("enrollmentCreated", {
-          //   userId,
-          //   courseId,
-          //   message: `New enrollment: User ${user.name} enrolled in a course!`,
-          // });
-          const admin = await User.findOne({ role: "admin" });
-          // constuser = await User.findById(userId);
-          if (admin) {
-            const message = `User ${user.name} enrolled in ${course.title}`;
 
-            io.to(admin._id.toString()).emit("notification", {
-              message,
-              type: "enrollment",
-              data: { courseId, userId },
-            });
-
+          if (!exists) {
             await Notification.create({
               userId: admin._id,
               message,
@@ -172,6 +148,8 @@ exports.handleWebhook = async (req, res) => {
               data: { courseId, userId },
             });
           }
+
+          console.log("✅ Enrollment + notification created for admin");
         }
       }
     }
